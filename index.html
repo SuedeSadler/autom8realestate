@@ -424,7 +424,7 @@
           <div class="field"><label>Bathrooms</label><input type="number" id="f-baths" placeholder="2" min="0"/></div>
         </div>
 
-        <div class="form-section-label">Photos</div>
+        <div class="form-section-label">Property photos</div>
         <div class="upload-area" onclick="document.getElementById('img-upload').click()">
           <i class="ti ti-photo-up"></i>
           <span>Click to upload images</span>
@@ -433,13 +433,23 @@
         <div class="upload-preview" id="img-preview"></div>
 
         <div class="form-section-label">Agent</div>
-        <div class="field"><label>Name</label><input type="text" id="f-agent-name" placeholder="Sarah Chen"/></div>
-        <div class="field"><label>Email</label><input type="email" id="f-agent-email" placeholder="sarah@realty.com.au"/></div>
-        <div class="field"><label>Phone</label><input type="tel" id="f-agent-phone" placeholder="+61 400 000 000"/></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <div id="agent-photo-preview" style="flex-shrink:0;">
+            <div style="width:48px;height:48px;border-radius:50%;background:var(--bg);border:0.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;">
+              <i class="ti ti-user" style="font-size:20px;color:var(--text3);"></i>
+            </div>
+          </div>
+          <div style="flex:1;font-size:11px;color:var(--text3);line-height:1.5;">
+            Agent photo appears here<br>after quick fill or upload
+          </div>
+        </div>
+        <div class="field"><label>Name</label><input type="text" id="f-agent-name" placeholder="James Hargreaves"/></div>
+        <div class="field"><label>Email</label><input type="email" id="f-agent-email" placeholder="james@autom8realestate.co.nz"/></div>
+        <div class="field"><label>Phone</label><input type="tel" id="f-agent-phone" placeholder="+64 21 000 000"/></div>
 
         <div class="form-section-label">Vendor</div>
-        <div class="field"><label>Name</label><input type="text" id="f-vendor-name" placeholder="James & Lisa Thompson"/></div>
-        <div class="field"><label>Email</label><input type="email" id="f-vendor-email" placeholder="jthompson@email.com"/></div>
+        <div class="field"><label>Name</label><input type="text" id="f-vendor-name" placeholder="Michael & Rachel Stewart"/></div>
+        <div class="field"><label>Email</label><input type="email" id="f-vendor-email" placeholder="m.stewart@gmail.com"/></div>
 
         <div class="form-section-label">Campaign</div>
         <div class="field"><label>First open home</label><input type="datetime-local" id="f-open-home"/></div>
@@ -684,27 +694,47 @@ function usageRemaining() { return Math.max(0, LIMIT - getUsage()); }
 
 /* ── DEMO DATA ── */
 const DEMO = {
-  address:'12 Ocean View Terrace, Manly NSW 2095', price:'$2,450,000',
+  address:'14 Trafalgar Street, Grey Lynn, Auckland 1021', price:'$1,850,000',
   beds:'4', baths:'2',
-  agentName:'Sarah Chen', agentEmail:'sarah.chen@harborviewrealty.com.au', agentPhone:'+61 412 345 678',
-  vendorName:'James & Lisa Thompson', vendorEmail:'j.thompson@icloud.com',
+  agentName:'James Hargreaves', agentEmail:'james.hargreaves@autom8realestate.co.nz', agentPhone:'+64 21 345 678',
+  vendorName:'Michael & Rachel Stewart', vendorEmail:'m.stewart@gmail.com',
+  agentPhoto:'https://res.cloudinary.com/dqdqcdtj7/image/upload/q_auto/f_auto/v1781651073/realestate_agent_kvsuv2.png',
+  propertyImage:'https://res.cloudinary.com/dqdqcdtj7/image/upload/q_auto/f_auto/v1781650853/H0636-hires.14644-trafalgar01_kuopuk.jpg',
 };
 
 let isDemo = false;
 
 function fillDemo() {
   isDemo = true;
-  document.getElementById('f-address').value    = DEMO.address;
-  document.getElementById('f-price').value      = DEMO.price;
-  document.getElementById('f-beds').value       = DEMO.beds;
-  document.getElementById('f-baths').value      = DEMO.baths;
-  document.getElementById('f-agent-name').value = DEMO.agentName;
-  document.getElementById('f-agent-email').value= DEMO.agentEmail;
-  document.getElementById('f-agent-phone').value= DEMO.agentPhone;
-  document.getElementById('f-vendor-name').value= DEMO.vendorName;
-  document.getElementById('f-vendor-email').value=DEMO.vendorEmail;
+  document.getElementById('f-address').value     = DEMO.address;
+  document.getElementById('f-price').value       = DEMO.price;
+  document.getElementById('f-beds').value        = DEMO.beds;
+  document.getElementById('f-baths').value       = DEMO.baths;
+  document.getElementById('f-agent-name').value  = DEMO.agentName;
+  document.getElementById('f-agent-email').value = DEMO.agentEmail;
+  document.getElementById('f-agent-phone').value = DEMO.agentPhone;
+  document.getElementById('f-vendor-name').value = DEMO.vendorName;
+  document.getElementById('f-vendor-email').value= DEMO.vendorEmail;
   const d = new Date(); d.setDate(d.getDate()+7); d.setHours(11,0,0);
-  document.getElementById('f-open-home').value  = d.toISOString().slice(0,16);
+  document.getElementById('f-open-home').value   = d.toISOString().slice(0,16);
+
+  /* show property image preview */
+  const imgPreview = document.getElementById('img-preview');
+  imgPreview.innerHTML = '';
+  const propThumb = document.createElement('img');
+  propThumb.className = 'upload-thumb';
+  propThumb.src = DEMO.propertyImage;
+  propThumb.style.cssText = 'width:100%;height:80px;border-radius:6px;object-fit:cover;margin-top:4px;';
+  imgPreview.appendChild(propThumb);
+
+  /* show agent photo preview */
+  const agentPreview = document.getElementById('agent-photo-preview');
+  agentPreview.innerHTML = '';
+  const agentThumb = document.createElement('img');
+  agentThumb.src = DEMO.agentPhoto;
+  agentThumb.style.cssText = 'width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid var(--orange);';
+  agentPreview.appendChild(agentThumb);
+
   setLog('Demo data filled — flyer preview will be shown', 'run');
 }
 
@@ -787,9 +817,13 @@ function hasRejectedImages() {
 
 /* ── PRE-GENERATED DEMO FLYER ── */
 function buildDemoFlyer(data) {
+  const agentPhoto   = data.agentPhoto   || 'https://res.cloudinary.com/dqdqcdtj7/image/upload/q_auto/f_auto/v1781651073/realestate_agent_kvsuv2.png';
+  const propertyImage = data.propertyImage || 'https://res.cloudinary.com/dqdqcdtj7/image/upload/q_auto/f_auto/v1781650853/H0636-hires.14644-trafalgar01_kuopuk.jpg';
+  data.agentPhoto    = agentPhoto;
+  data.propertyImage = propertyImage;
   return `
   <div style="width:100%;max-width:500px;margin:0 auto;position:relative;overflow:hidden;font-family:'Helvetica Neue',Arial,sans-serif;background:#111;border-radius:12px;aspect-ratio:1/1;">
-    <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80"
+    <img src="${data.propertyImage}"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="Property">
     <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.0) 30%,rgba(0,0,0,0.55) 58%,rgba(0,0,0,0.88) 75%,rgba(0,0,0,0.97) 100%);"></div>
     <div style="position:absolute;top:16px;left:16px;background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.35);border-radius:30px;padding:6px 14px;">
@@ -814,7 +848,7 @@ function buildDemoFlyer(data) {
           <div style="font-size:11px;color:#FF6D3F;font-weight:600;margin-top:4px;">${data.price} · ${data.beds} bed · ${data.baths} bath</div>
         </div>
         <div style="width:60px;height:60px;border-radius:50%;border:2.5px solid #FF6D3F;overflow:hidden;flex-shrink:0;background:#444;">
-          <img src="https://i.pravatar.cc/60" style="width:100%;height:100%;object-fit:cover;" alt="Agent">
+          <img src="${data.agentPhoto}" style="width:100%;height:100%;object-fit:cover;" alt="Agent">
         </div>
       </div>
     </div>
@@ -948,6 +982,8 @@ async function launchWorkflow() {
       agentName: payload.AGENT_NAME,
       agentPhone: payload.AGENT_PHONE,
       agentEmail: payload.AGENT_EMAIL,
+      agentPhoto: DEMO.agentPhoto,
+      propertyImage: DEMO.propertyImage,
     });
   } else {
     const remaining = usageRemaining();
