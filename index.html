@@ -938,25 +938,27 @@ async function launchWorkflow() {
     SOURCE:         isDemo ? 'demo' : 'listing-launcher-ui',
   };
 
-  if (!isDemo) {
-    /* real submission — hit the webhook and count the render */
-    try {
-      const params = new URLSearchParams(payload);
-      const res = await fetch('/api/trigger?' + params.toString(), {
-        headers: { 'x-usage-count': String(getUsage()) }
-      });
-      if (res.ok) {
+  /* always fire the webhook */
+  let jobId = null;
+  try {
+    const params = new URLSearchParams(payload);
+    const headers = isDemo ? {} : { 'x-usage-count': String(getUsage()) };
+    const res = await fetch('/api/trigger?' + params.toString(), { headers });
+    const data = await res.json();
+    if (res.ok) {
+      jobId = data.jobId || null;
+      if (!isDemo) {
         incrementUsage();
         const remaining = usageRemaining();
         setLog(`Webhook fired ✓ — ${remaining} render${remaining === 1 ? '' : 's'} remaining`, 'ok');
       } else {
-        setLog('Webhook error: ' + res.status, 'err');
+        setLog('Demo webhook fired ✓ — n8n will use pre-saved flyer', 'ok');
       }
-    } catch(e) {
-      setLog('Webhook failed: ' + e.message, 'err');
+    } else {
+      setLog('Webhook error: ' + res.status, 'err');
     }
-  } else {
-    setLog('Demo mode — showing pre-generated flyer', 'run');
+  } catch(e) {
+    setLog('Webhook failed: ' + e.message, 'err');
   }
 
   /* reset pan so animation starts from node 1 */
@@ -983,11 +985,23 @@ async function launchWorkflow() {
         Pre-generated demo flyer &middot; Real submissions generate a live version
       </p>`;
   } else {
+    /* show a spinner while we poll for the generated flyer */
     const remaining = usageRemaining();
-    flyerEl.innerHTML = `<p style="font-size:12px;color:#5f5e5a;text-align:center;padding:8px 0;">
-      Your listing flyer is being generated and will be sent to the agent.<br>
-      <span style="color:#854F0B;font-weight:500;">${remaining} demo render${remaining===1?'':'s'} remaining.</span>
-    </p>`;
+    flyerEl.innerHTML = `
+      <div id="flyer-loading" style="text-align:center;padding:20px 0;">
+        <div style="display:inline-flex;align-items:center;gap:8px;font-size:12px;color:#5f5e5a;">
+          <i class="ti ti-loader-2 spinner" style="font-size:16px;color:#FF6D3F;"></i>
+          Generating your listing flyer…
+        </div>
+        <div style="font-size:11px;color:#9c9a92;margin-top:6px;">This usually takes 10–20 seconds</div>
+      </div>
+      <div id="flyer-result" style="display:none;"></div>
+      <p style="text-align:center;font-size:11px;color:#854F0B;font-weight:500;margin-top:8px;">
+        ${remaining} demo render${remaining===1?'':'s'} remaining
+      </p>`;
+
+    /* start polling if we have a jobId */
+    if (jobId) pollForFlyer(jobId);
   }
 
   document.getElementById('resultOverlay').classList.add('visible');
@@ -998,6 +1012,48 @@ async function launchWorkflow() {
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function pollForFlyer(jobId) {
+  const maxAttempts = 30; // 30 x 2s = 60s timeout
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
+    await sleep(2000);
+    attempts++;
+
+    try {
+      const res = await fetch('/api/status?jobId=' + jobId);
+      const data = await res.json();
+
+      if (data.ready && data.flyerUrl) {
+        const loadingEl = document.getElementById('flyer-loading');
+        const resultEl  = document.getElementById('flyer-result');
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (resultEl) {
+          resultEl.style.display = 'block';
+          resultEl.innerHTML = `
+            <img src="${data.flyerUrl}"
+              style="width:100%;border-radius:8px;display:block;margin-top:4px;"
+              alt="Generated listing flyer">
+            <p style="text-align:center;font-size:11px;color:#9c9a92;margin-top:8px;">
+              Live generated flyer &middot; Sent to agent and vendor
+            </p>`;
+          setLog('Flyer ready ✓', 'ok');
+        }
+        return;
+      }
+
+      setLog('Generating flyer… (' + attempts + 's)', 'run');
+    } catch(e) {
+      /* keep polling on transient errors */
+    }
+  }
+
+  /* timeout */
+  const loadingEl = document.getElementById('flyer-loading');
+  if (loadingEl) loadingEl.innerHTML = '<p style="font-size:11px;color:#9c9a92;text-align:center;">Flyer is being processed — check your email shortly.</p>';
+  setLog('Flyer still generating — check n8n', 'run');
+}
 
 /* ── PIN OVERRIDE ── */
 const PIN_KEY = 'a8re_admin_unlocked';
