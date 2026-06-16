@@ -976,15 +976,12 @@ async function launchWorkflow() {
 
   const flyerEl = document.getElementById('result-flyer');
   if (isDemo) {
-    flyerEl.innerHTML = buildDemoFlyer({
-      address, price: payload.PRICE,
-      beds: payload.BEDROOMS, baths: payload.BATHROOMS,
-      agentName: payload.AGENT_NAME,
-      agentPhone: payload.AGENT_PHONE,
-      agentEmail: payload.AGENT_EMAIL,
-      agentPhoto: DEMO.agentPhoto,
-      propertyImage: DEMO.propertyImage,
-    });
+    flyerEl.innerHTML = `
+      <img src="https://res.cloudinary.com/dqdqcdtj7/image/upload/q_auto/f_auto/v1781652206/44014C19-D585-4EDB-AD7D-B9816E3C3B9C_r69eyd.jpg"
+        style="width:100%;border-radius:8px;display:block;" alt="Demo listing flyer">
+      <p style="text-align:center;font-size:11px;color:#9c9a92;margin-top:8px;">
+        Pre-generated demo flyer &middot; Real submissions generate a live version
+      </p>`;
   } else {
     const remaining = usageRemaining();
     flyerEl.innerHTML = `<p style="font-size:12px;color:#5f5e5a;text-align:center;padding:8px 0;">
