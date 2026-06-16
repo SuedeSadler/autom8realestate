@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Listing Launcher</title>
+<title>Autom8 Real Estate</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 <style>
   :root {
@@ -27,7 +27,6 @@
     --pink-light: #FBEAF0;
     --teal: #0F6E56;
     --teal-light: #E1F5EE;
-    --sidebar-w: 200px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,205 +35,234 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: var(--bg);
     color: var(--text);
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-  }
-
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: var(--sidebar-w);
-    min-width: var(--sidebar-w);
-    background: var(--bg2);
-    border-right: 0.5px solid var(--border);
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
   }
-  .sidebar-header {
-    padding: 16px;
-    border-bottom: 0.5px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
-  .logo-text { font-size: 13px; font-weight: 600; color: var(--text); }
-
-  .sidebar-label {
-    font-size: 10px;
-    color: var(--text3);
-    padding: 14px 16px 5px;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-  .nav-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 7px 12px; margin: 0 6px;
-    border-radius: 6px;
-    font-size: 12px; color: var(--text2); cursor: pointer;
-    transition: background .12s;
-  }
-  .nav-item:hover { background: var(--bg); }
-  .nav-item.active { background: var(--orange-light); color: var(--orange-dark); font-weight: 500; }
-  .nav-item i { font-size: 14px; flex-shrink: 0; }
-
-  .sidebar-footer {
-    margin-top: auto;
-    padding: 10px 6px;
-    border-top: 0.5px solid var(--border);
-  }
-
-  /* ── MAIN ── */
-  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
   /* ── TOPBAR ── */
   .topbar {
     background: var(--bg2);
     border-bottom: 0.5px solid var(--border);
-    padding: 0 20px;
-    height: 50px;
+    padding: 0 28px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
-  .topbar-title { font-size: 13px; font-weight: 500; color: var(--text); }
-  .topbar-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
-  .topbar-right { display: flex; align-items: center; gap: 8px; }
-
-  .btn {
-    padding: 6px 13px; border-radius: 6px;
-    font-size: 12px; font-weight: 500;
-    border: 0.5px solid var(--border2);
-    background: transparent; color: var(--text2);
-    cursor: pointer; display: flex; align-items: center; gap: 5px;
-    transition: background .12s;
-    font-family: inherit;
+  .logo {
+    display: flex; align-items: center; gap: 10px;
   }
-  .btn:hover { background: var(--bg); }
-  .btn i { font-size: 13px; }
-  .btn-primary { background: var(--orange); border-color: var(--orange); color: #fff; }
-  .btn-primary:hover { background: var(--orange-dark); border-color: var(--orange-dark); }
-  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .logo-mark {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-mark i { color: #fff; font-size: 14px; }
+  .logo-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+  .logo-name span { color: var(--orange); }
+  .topbar-tag {
+    font-size: 10px; font-weight: 500;
+    background: var(--orange-light); color: var(--orange-dark);
+    padding: 2px 8px; border-radius: 20px;
+    border: 0.5px solid #ffd4c2;
+  }
 
-  /* ── CONTENT ── */
-  .content-area { flex: 1; display: flex; overflow: hidden; }
+  /* ── PAGE ── */
+  .page { flex: 1; display: flex; flex-direction: column; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 48px 28px 36px;
+    max-width: 560px;
+  }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 600; color: var(--orange);
+    text-transform: uppercase; letter-spacing: .08em;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: block; width: 16px; height: 1.5px;
+    background: var(--orange);
+  }
+  .hero-title {
+    font-size: 28px; font-weight: 700; color: var(--text);
+    line-height: 1.2; letter-spacing: -.02em;
+    margin-bottom: 12px;
+  }
+  .hero-title span { color: var(--orange); }
+  .hero-sub {
+    font-size: 13px; color: var(--text2); line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .hero-pills {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .pill {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--text2);
+    background: var(--bg2); border: 0.5px solid var(--border);
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .pill i { font-size: 12px; color: var(--orange); }
+
+  /* ── MAIN LAYOUT ── */
+  .main-layout {
+    flex: 1;
+    display: flex;
+    gap: 0;
+    border-top: 0.5px solid var(--border);
+  }
 
   /* ── FORM PANEL ── */
   .form-panel {
-    width: 248px;
-    min-width: 248px;
+    width: 280px;
+    min-width: 280px;
     background: var(--bg2);
     border-right: 0.5px solid var(--border);
     display: flex;
     flex-direction: column;
+    position: sticky;
+    top: 52px;
+    height: calc(100vh - 52px);
     overflow: hidden;
   }
 
   .demo-bar {
-    margin: 10px 14px 0;
-    padding: 7px 10px;
+    margin: 12px 14px 0;
+    padding: 8px 11px;
     background: var(--amber-light);
     border: 0.5px solid #f0c877;
-    border-radius: 6px;
+    border-radius: 7px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     flex-shrink: 0;
   }
+  .demo-bar-left { display: flex; align-items: center; gap: 5px; }
   .demo-bar span { font-size: 11px; color: var(--amber); font-weight: 500; }
   .demo-btn {
     font-size: 10px; padding: 3px 9px;
     background: var(--amber); color: #fff;
     border: none; border-radius: 4px; cursor: pointer;
-    font-weight: 500; white-space: nowrap;
-    font-family: inherit;
+    font-weight: 600; white-space: nowrap; font-family: inherit;
     transition: opacity .12s;
   }
   .demo-btn:hover { opacity: .85; }
 
-  .form-scroll { flex: 1; overflow-y: auto; padding: 10px 14px 14px; }
+  .form-scroll {
+    flex: 1; overflow-y: auto;
+    padding: 10px 14px 14px;
+  }
   .form-scroll::-webkit-scrollbar { width: 3px; }
   .form-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
   .form-section-label {
     font-size: 10px; font-weight: 600; color: var(--text3);
     text-transform: uppercase; letter-spacing: .06em;
-    margin: 14px 0 7px;
+    margin: 16px 0 7px;
   }
   .form-section-label:first-child { margin-top: 4px; }
 
   .field { margin-bottom: 7px; }
   .field label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 3px; font-weight: 500; }
-  .field input, .field select {
-    width: 100%;
-    padding: 6px 9px;
-    font-size: 12px;
-    border: 0.5px solid var(--border);
-    border-radius: 6px;
-    background: var(--bg);
-    color: var(--text);
-    font-family: inherit;
-    outline: none;
+  .field input {
+    width: 100%; padding: 7px 10px; font-size: 12px;
+    border: 0.5px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--text);
+    font-family: inherit; outline: none;
     transition: border-color .12s;
   }
-  .field input:focus { border-color: var(--orange); }
+  .field input:focus { border-color: var(--orange); background: #fff; }
   .field input::placeholder { color: var(--text3); }
   .field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
 
   .upload-area {
-    border: 0.5px dashed var(--border2);
-    border-radius: 6px;
-    padding: 11px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color .12s, background .12s;
-    background: var(--bg);
+    border: 0.5px dashed var(--border2); border-radius: 6px;
+    padding: 12px; text-align: center; cursor: pointer;
+    transition: border-color .12s, background .12s; background: var(--bg);
   }
   .upload-area:hover { border-color: var(--orange); background: var(--orange-light); }
-  .upload-area i { font-size: 18px; color: var(--text3); display: block; margin-bottom: 3px; }
+  .upload-area i { font-size: 20px; color: var(--text3); display: block; margin-bottom: 4px; }
   .upload-area span { font-size: 11px; color: var(--text3); }
   .upload-area input[type=file] { display: none; }
   .upload-preview { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-  .upload-thumb { width: 38px; height: 38px; border-radius: 4px; object-fit: cover; border: 0.5px solid var(--border); }
+  .upload-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 0.5px solid var(--border); }
 
   .launch-btn {
-    margin: 8px 14px 14px;
-    padding: 10px;
-    background: var(--orange);
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: background .12s, transform .08s;
-    flex-shrink: 0;
+    margin: 8px 14px 14px; padding: 11px;
+    background: var(--orange); border: none; border-radius: 8px;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: background .12s, transform .08s; flex-shrink: 0;
   }
   .launch-btn:hover { background: var(--orange-dark); }
   .launch-btn:active { transform: scale(.98); }
   .launch-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-  /* ── CANVAS + LOG ── */
-  .canvas-col { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  /* ── CANVAS SECTION ── */
+  .canvas-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
 
-  .canvas-area { flex: 1; position: relative; overflow: hidden; }
+  .canvas-header {
+    padding: 14px 20px 10px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--bg2);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .canvas-header-left { display: flex; align-items: center; gap: 8px; }
+  .canvas-title { font-size: 12px; font-weight: 500; color: var(--text); }
+  .canvas-sub { font-size: 11px; color: var(--text3); }
+  .drag-hint {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--text3);
+  }
+  .drag-hint i { font-size: 13px; }
+
+  .canvas-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+  }
+  .canvas-area.dragging { cursor: grabbing; }
+
   .dots-bg {
     position: absolute; inset: 0;
     background-image: radial-gradient(circle, #c8c6c0 1px, transparent 1px);
     background-size: 24px 24px;
-    opacity: .45;
-    pointer-events: none;
+    opacity: .45; pointer-events: none;
   }
 
-  .flow-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  /* draggable world inside canvas */
+  .canvas-world {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1200px;
+    height: 500px;
+    will-change: transform;
+  }
+
+  .flow-lines {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; overflow: visible;
+  }
 
   .node-card {
     position: absolute;
@@ -242,18 +270,20 @@
     border: 0.5px solid var(--border);
     border-radius: 10px;
     padding: 10px 13px;
-    cursor: pointer;
-    width: 148px;
-    transition: border-color .15s, transform .1s;
+    width: 150px;
+    transition: border-color .15s, box-shadow .15s;
     user-select: none;
+    pointer-events: none;
   }
-  .node-card:hover { border-color: var(--orange); transform: translateY(-1px); }
-  .node-card.running { border-color: var(--blue); animation: pulse-border 1s ease-in-out infinite; }
+  .node-card.running {
+    border-color: var(--blue);
+    animation: pulse-border 1s ease-in-out infinite;
+  }
   .node-card.done { border-color: var(--green); }
 
   @keyframes pulse-border {
     0%,100% { box-shadow: 0 0 0 2px var(--blue-light); }
-    50%      { box-shadow: 0 0 0 4px var(--blue-light); }
+    50%      { box-shadow: 0 0 0 5px var(--blue-light); }
   }
 
   .node-icon {
@@ -263,39 +293,32 @@
   }
   .node-name { font-size: 11px; font-weight: 500; color: var(--text); line-height: 1.3; }
   .node-type { font-size: 10px; color: var(--text3); margin-top: 2px; }
-
-  .node-progress { height: 2px; border-radius: 1px; background: var(--border); margin-top: 8px; overflow: hidden; opacity: 0; transition: opacity .2s; }
-  .node-progress-bar { height: 100%; background: var(--blue); border-radius: 1px; width: 0%; transition: width .4s ease; }
+  .node-progress {
+    height: 2px; border-radius: 1px; background: var(--border);
+    margin-top: 8px; overflow: hidden; opacity: 0; transition: opacity .2s;
+  }
+  .node-progress-bar { height: 100%; border-radius: 1px; width: 0%; transition: width .4s ease; }
   .node-card.running .node-progress { opacity: 1; }
   .node-card.done .node-progress { opacity: 1; }
   .node-card.done .node-progress-bar { width: 100%; background: var(--green); }
 
   /* ── LOG STRIP ── */
   .log-strip {
-    height: 40px;
-    background: var(--bg2);
+    height: 38px; background: var(--bg2);
     border-top: 0.5px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 10px;
-    flex-shrink: 0;
-    overflow: hidden;
+    display: flex; align-items: center;
+    padding: 0 18px; gap: 10px; flex-shrink: 0;
   }
   .log-label {
     font-size: 10px; font-weight: 600; color: var(--text3);
-    text-transform: uppercase; letter-spacing: .06em;
-    white-space: nowrap;
+    text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
   }
-  .log-divider { width: 0.5px; height: 16px; background: var(--border); flex-shrink: 0; }
+  .log-divider { width: 0.5px; height: 14px; background: var(--border); flex-shrink: 0; }
   .log-ticker {
-    flex: 1;
-    font-size: 11px;
+    flex: 1; font-size: 11px;
     font-family: 'SF Mono', 'Fira Code', monospace;
-    color: var(--text2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: var(--text2); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
   }
   .log-ticker .log-time { color: var(--text3); margin-right: 8px; }
   .log-ticker.ok { color: var(--green); }
@@ -307,23 +330,20 @@
     position: absolute; inset: 0;
     background: rgba(248,247,244,.92);
     display: flex; align-items: center; justify-content: center;
-    z-index: 20;
+    z-index: 50;
     opacity: 0; pointer-events: none;
     transition: opacity .3s;
   }
   .result-overlay.visible { opacity: 1; pointer-events: all; }
   .result-card {
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: 14px;
-    padding: 28px 32px;
-    width: 360px;
-    text-align: center;
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: 14px; padding: 28px 32px; width: 360px; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,.08);
   }
   .result-icon { font-size: 40px; color: var(--green); margin-bottom: 12px; }
-  .result-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .result-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
   .result-sub { font-size: 12px; color: var(--text2); margin-bottom: 18px; line-height: 1.6; }
-  .result-steps { text-align: left; margin-bottom: 18px; }
+  .result-steps { text-align: left; margin-bottom: 20px; }
   .result-step {
     display: flex; align-items: center; gap: 9px;
     font-size: 12px; color: var(--text2); padding: 6px 0;
@@ -332,6 +352,14 @@
   .result-step:last-child { border-bottom: none; }
   .result-step i { font-size: 14px; color: var(--green); flex-shrink: 0; }
   .result-actions { display: flex; gap: 8px; justify-content: center; }
+  .btn {
+    padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    border: 0.5px solid var(--border2); background: transparent; color: var(--text2);
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    transition: background .12s; font-family: inherit;
+  }
+  .btn:hover { background: var(--bg); }
+  .btn i { font-size: 13px; }
 
   /* ── SPINNER ── */
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -340,102 +368,107 @@
 </head>
 <body>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo-dot"></div>
-      <span class="logo-text">Listing Launcher</span>
-    </div>
-    <div class="sidebar-label">Workflows</div>
-    <div class="nav-item active"><i class="ti ti-bolt"></i> Live listing launch</div>
-    <div class="nav-item"><i class="ti ti-trending-down"></i> Price reduction</div>
-    <div class="nav-item"><i class="ti ti-calendar-event"></i> Open home reminder</div>
-    <div class="nav-item"><i class="ti ti-circle-check"></i> Sold notification</div>
-    <div class="sidebar-label">Connections</div>
-    <div class="nav-item"><i class="ti ti-mail"></i> Gmail</div>
-    <div class="nav-item"><i class="ti ti-brand-facebook"></i> Facebook</div>
-    <div class="nav-item"><i class="ti ti-palette"></i> Canva</div>
-    <div class="nav-item"><i class="ti ti-message"></i> Twilio SMS</div>
-    <div class="sidebar-footer">
-      <div class="nav-item"><i class="ti ti-settings"></i> Settings</div>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark"><i class="ti ti-bolt"></i></div>
+    <span class="logo-name">Autom8 <span>Real Estate</span></span>
+  </div>
+  <span class="topbar-tag">Demo</span>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Automation demo</div>
+    <div class="hero-title">Launch a listing campaign<br>in <span>one click</span></div>
+    <div class="hero-sub">Fill in the property details and hit launch. This demo triggers a live n8n automation that creates a Canva flyer, emails the vendor, posts to Facebook, generates a campaign report, and sends an SMS to the agent — all at once.</div>
+    <div class="hero-pills">
+      <div class="pill"><i class="ti ti-palette"></i> Canva flyer</div>
+      <div class="pill"><i class="ti ti-mail"></i> Vendor email</div>
+      <div class="pill"><i class="ti ti-brand-facebook"></i> Facebook post</div>
+      <div class="pill"><i class="ti ti-file-text"></i> Campaign report</div>
+      <div class="pill"><i class="ti ti-message"></i> Agent SMS</div>
     </div>
   </div>
 
-  <!-- MAIN -->
-  <div class="main">
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout">
 
-    <!-- TOPBAR -->
-    <div class="topbar">
-      <div>
-        <div class="topbar-title">Real estate listing automation</div>
-        <div class="topbar-sub">Triggers on form submit · 10 nodes</div>
+    <!-- FORM -->
+    <div class="form-panel">
+
+      <div class="demo-bar">
+        <div class="demo-bar-left">
+          <i class="ti ti-wand" style="font-size:12px;color:var(--amber)"></i>
+          <span>Try the demo</span>
+        </div>
+        <button class="demo-btn" onclick="fillDemo()">Quick fill</button>
       </div>
-      <div class="topbar-right">
-        <button class="btn btn-primary" id="topbar-launch" onclick="launchWorkflow()">
-          <i class="ti ti-bolt"></i> Launch campaign
-        </button>
+
+      <div class="form-scroll">
+
+        <div class="form-section-label">Property</div>
+        <div class="field">
+          <label>Address</label>
+          <input type="text" id="f-address" placeholder="12 Ocean View Terrace, Manly"/>
+        </div>
+        <div class="field">
+          <label>Price</label>
+          <input type="text" id="f-price" placeholder="$2,450,000"/>
+        </div>
+        <div class="field-row-2">
+          <div class="field"><label>Bedrooms</label><input type="number" id="f-beds" placeholder="4" min="0"/></div>
+          <div class="field"><label>Bathrooms</label><input type="number" id="f-baths" placeholder="2" min="0"/></div>
+        </div>
+
+        <div class="form-section-label">Photos</div>
+        <div class="upload-area" onclick="document.getElementById('img-upload').click()">
+          <i class="ti ti-photo-up"></i>
+          <span>Click to upload images</span>
+          <input type="file" id="img-upload" accept="image/*" multiple onchange="handleImages(this)">
+        </div>
+        <div class="upload-preview" id="img-preview"></div>
+
+        <div class="form-section-label">Agent</div>
+        <div class="field"><label>Name</label><input type="text" id="f-agent-name" placeholder="Sarah Chen"/></div>
+        <div class="field"><label>Email</label><input type="email" id="f-agent-email" placeholder="sarah@realty.com.au"/></div>
+        <div class="field"><label>Phone</label><input type="tel" id="f-agent-phone" placeholder="+61 400 000 000"/></div>
+
+        <div class="form-section-label">Vendor</div>
+        <div class="field"><label>Name</label><input type="text" id="f-vendor-name" placeholder="James & Lisa Thompson"/></div>
+        <div class="field"><label>Email</label><input type="email" id="f-vendor-email" placeholder="jthompson@email.com"/></div>
+
+        <div class="form-section-label">Campaign</div>
+        <div class="field"><label>First open home</label><input type="datetime-local" id="f-open-home"/></div>
+
       </div>
+
+      <button class="launch-btn" id="launch-btn" onclick="launchWorkflow()">
+        <i class="ti ti-bolt"></i> Launch campaign
+      </button>
+
     </div>
 
-    <!-- CONTENT -->
-    <div class="content-area">
+    <!-- CANVAS SECTION -->
+    <div class="canvas-section">
 
-      <!-- FORM -->
-      <div class="form-panel">
-
-        <div class="demo-bar">
-          <span><i class="ti ti-wand" style="font-size:11px"></i> Demo mode</span>
-          <button class="demo-btn" onclick="fillDemo()">Quick fill</button>
+      <div class="canvas-header">
+        <div class="canvas-header-left">
+          <span class="canvas-title">Workflow</span>
+          <span class="canvas-sub">· 10 nodes · triggers on form submit</span>
         </div>
-
-        <div class="form-scroll">
-
-          <div class="form-section-label">Property</div>
-          <div class="field">
-            <label>Address</label>
-            <input type="text" id="f-address" placeholder="12 Ocean View Terrace, Manly"/>
-          </div>
-          <div class="field">
-            <label>Price</label>
-            <input type="text" id="f-price" placeholder="$2,450,000"/>
-          </div>
-          <div class="field-row-2">
-            <div class="field"><label>Bedrooms</label><input type="number" id="f-beds" placeholder="4" min="0"/></div>
-            <div class="field"><label>Bathrooms</label><input type="number" id="f-baths" placeholder="2" min="0"/></div>
-          </div>
-
-          <div class="form-section-label">Photos</div>
-          <div class="upload-area" onclick="document.getElementById('img-upload').click()">
-            <i class="ti ti-photo-up"></i>
-            <span>Click to upload images</span>
-            <input type="file" id="img-upload" accept="image/*" multiple onchange="handleImages(this)">
-          </div>
-          <div class="upload-preview" id="img-preview"></div>
-
-          <div class="form-section-label">Agent</div>
-          <div class="field"><label>Name</label><input type="text" id="f-agent-name" placeholder="Sarah Chen"/></div>
-          <div class="field"><label>Email</label><input type="email" id="f-agent-email" placeholder="sarah@realty.com.au"/></div>
-          <div class="field"><label>Phone</label><input type="tel" id="f-agent-phone" placeholder="+61 400 000 000"/></div>
-
-          <div class="form-section-label">Vendor</div>
-          <div class="field"><label>Name</label><input type="text" id="f-vendor-name" placeholder="James & Lisa Thompson"/></div>
-          <div class="field"><label>Email</label><input type="email" id="f-vendor-email" placeholder="jthompson@email.com"/></div>
-
-          <div class="form-section-label">Campaign</div>
-          <div class="field"><label>First open home</label><input type="datetime-local" id="f-open-home"/></div>
-
+        <div class="drag-hint">
+          <i class="ti ti-arrows-move"></i> Drag to explore
         </div>
-
-        <button class="launch-btn" id="launch-btn" onclick="launchWorkflow()">
-          <i class="ti ti-bolt"></i> Launch campaign
-        </button>
-
       </div>
 
-      <!-- CANVAS + LOG -->
-      <div class="canvas-col">
-        <div class="canvas-area">
-          <div class="dots-bg"></div>
+      <div class="canvas-area" id="canvasArea">
+        <div class="dots-bg"></div>
+
+        <div class="canvas-world" id="canvasWorld">
 
           <svg class="flow-lines">
             <defs>
@@ -446,138 +479,193 @@
                 <path d="M2 1L8 5L2 9" fill="none" stroke="#FF6D3F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </marker>
             </defs>
-            <line x1="164" y1="67" x2="186" y2="67" stroke="#c8c6c0" stroke-width="1" marker-end="url(#arr)"/>
-            <line x1="334" y1="67" x2="356" y2="67" stroke="#c8c6c0" stroke-width="1" marker-end="url(#arr)"/>
-            <path d="M504 67 L516 67 L516 41 L526 41" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
-            <path d="M504 67 L516 67 L516 137 L526 137" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
-            <path d="M504 67 L516 67 L516 233 L526 233" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
-            <path d="M504 67 L516 67 L516 329 L526 329" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
-            <path d="M674 41 L686 41 L686 137 L696 137" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
-            <path d="M674 137 L686 137 L686 233 L696 233" stroke="#FF6D3F" stroke-width="1" fill="none" stroke-dasharray="4 3" marker-end="url(#arr-o)"/>
-            <path d="M844 233 L856 233 L856 185 L866 185" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
+            <!-- trigger → fetch -->
+            <line x1="170" y1="80" x2="200" y2="80" stroke="#c8c6c0" stroke-width="1" marker-end="url(#arr)"/>
+            <!-- fetch → map -->
+            <line x1="360" y1="80" x2="390" y2="80" stroke="#c8c6c0" stroke-width="1" marker-end="url(#arr)"/>
+            <!-- map → canva1 -->
+            <path d="M550 80 L565 80 L565 46 L580 46" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
+            <!-- map → email -->
+            <path d="M550 80 L565 80 L565 150 L580 150" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
+            <!-- map → fb -->
+            <path d="M550 80 L565 80 L565 254 L580 254" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
+            <!-- map → report -->
+            <path d="M550 80 L565 80 L565 358 L580 358" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
+            <!-- canva1 → canva2 -->
+            <path d="M740 46 L755 46 L755 150 L770 150" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
+            <!-- canva2 → monday (orange dashed) -->
+            <path d="M740 150 L755 150 L755 254 L770 254" stroke="#FF6D3F" stroke-width="1" fill="none" stroke-dasharray="4 3" marker-end="url(#arr-o)"/>
+            <!-- monday → sms -->
+            <path d="M930 254 L945 254 L945 202 L960 202" stroke="#c8c6c0" stroke-width="1" fill="none" marker-end="url(#arr)"/>
           </svg>
 
           <!-- NODES -->
-          <div class="node-card" style="left:16px;top:37px" id="n-trigger">
+          <div class="node-card" style="left:20px;top:50px" id="n-trigger">
             <div class="node-icon" style="background:var(--orange-light)"><i class="ti ti-webhook" style="color:var(--orange-dark)"></i></div>
             <div class="node-name">Webhook trigger</div>
             <div class="node-type">Form submission</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-trigger"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-trigger" style="background:var(--blue)"></div></div>
           </div>
 
-          <div class="node-card" style="left:186px;top:37px" id="n-fetch">
+          <div class="node-card" style="left:200px;top:50px" id="n-fetch">
             <div class="node-icon" style="background:var(--orange-light)"><i class="ti ti-database" style="color:var(--orange-dark)"></i></div>
             <div class="node-name">Fetch listing data</div>
             <div class="node-type">Monday.com</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-fetch"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-fetch" style="background:var(--blue)"></div></div>
           </div>
 
-          <div class="node-card" style="left:356px;top:37px" id="n-map">
+          <div class="node-card" style="left:390px;top:50px" id="n-map">
             <div class="node-icon" style="background:var(--teal-light)"><i class="ti ti-code" style="color:var(--teal)"></i></div>
             <div class="node-name">Map placeholders</div>
             <div class="node-type">Code node</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-map"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-map" style="background:var(--blue)"></div></div>
           </div>
 
-          <div class="node-card" style="left:526px;top:8px" id="n-canva1">
+          <div class="node-card" style="left:580px;top:16px" id="n-canva1">
             <div class="node-icon" style="background:var(--blue-light)"><i class="ti ti-palette" style="color:var(--blue)"></i></div>
             <div class="node-name">Create listing flyer</div>
             <div class="node-type">Canva API</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-canva1"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-canva1" style="background:var(--blue)"></div></div>
           </div>
 
-          <div class="node-card" style="left:526px;top:104px" id="n-email">
+          <div class="node-card" style="left:580px;top:120px" id="n-email">
             <div class="node-icon" style="background:var(--pink-light)"><i class="ti ti-mail" style="color:var(--pink)"></i></div>
             <div class="node-name">Notify vendor</div>
             <div class="node-type">Gmail</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-email"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-email" style="background:var(--blue)"></div></div>
           </div>
 
-          <div class="node-card" style="left:526px;top:200px" id="n-fb">
+          <div class="node-card" style="left:580px;top:224px" id="n-fb">
             <div class="node-icon" style="background:var(--blue-light)"><i class="ti ti-brand-facebook" style="color:var(--blue)"></i></div>
             <div class="node-name">Post to Facebook</div>
             <div class="node-type">Facebook Graph API</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-fb"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-fb" style="background:var(--blue)"></div></div>
           </div>
 
-          <div class="node-card" style="left:526px;top:296px" id="n-report">
+          <div class="node-card" style="left:580px;top:328px" id="n-report">
             <div class="node-icon" style="background:var(--teal-light)"><i class="ti ti-file-text" style="color:var(--teal)"></i></div>
             <div class="node-name">Generate report</div>
             <div class="node-type">Code node</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-report"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-report" style="background:var(--blue)"></div></div>
           </div>
 
-          <div class="node-card" style="left:696px;top:104px" id="n-canva2">
+          <div class="node-card" style="left:770px;top:120px" id="n-canva2">
             <div class="node-icon" style="background:var(--blue-light)"><i class="ti ti-link" style="color:var(--blue)"></i></div>
             <div class="node-name">Get flyer URL</div>
             <div class="node-type">Canva API</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-canva2"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-canva2" style="background:var(--blue)"></div></div>
           </div>
 
-          <div class="node-card" style="left:696px;top:200px" id="n-monday">
+          <div class="node-card" style="left:770px;top:224px" id="n-monday">
             <div class="node-icon" style="background:var(--orange-light)"><i class="ti ti-brand-monday" style="color:var(--orange-dark)"></i></div>
             <div class="node-name">Update status</div>
             <div class="node-type">Monday.com</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-monday"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-monday" style="background:var(--blue)"></div></div>
           </div>
 
-          <div class="node-card" style="left:866px;top:152px" id="n-sms">
+          <div class="node-card" style="left:960px;top:172px" id="n-sms">
             <div class="node-icon" style="background:var(--amber-light)"><i class="ti ti-message" style="color:var(--amber)"></i></div>
             <div class="node-name">SMS — notify agent</div>
             <div class="node-type">Twilio</div>
-            <div class="node-progress"><div class="node-progress-bar" id="nb-sms"></div></div>
+            <div class="node-progress"><div class="node-progress-bar" id="nb-sms" style="background:var(--blue)"></div></div>
           </div>
 
-          <!-- SUCCESS OVERLAY -->
-          <div class="result-overlay" id="resultOverlay">
-            <div class="result-card">
-              <div class="result-icon"><i class="ti ti-circle-check"></i></div>
-              <div class="result-title">Campaign launched!</div>
-              <div class="result-sub" id="result-address">Your listing is now live and being marketed.</div>
-              <div class="result-steps">
-                <div class="result-step"><i class="ti ti-palette"></i> Listing flyer created in Canva</div>
-                <div class="result-step"><i class="ti ti-mail"></i> Vendor notified by email</div>
-                <div class="result-step"><i class="ti ti-brand-facebook"></i> Posted to Facebook</div>
-                <div class="result-step"><i class="ti ti-file-text"></i> Campaign report generated</div>
-                <div class="result-step"><i class="ti ti-message"></i> Agent notified by SMS</div>
-              </div>
-              <div class="result-actions">
-                <button class="btn" onclick="resetAll()"><i class="ti ti-refresh"></i> New listing</button>
-              </div>
+        </div>
+
+        <!-- SUCCESS OVERLAY -->
+        <div class="result-overlay" id="resultOverlay">
+          <div class="result-card">
+            <div class="result-icon"><i class="ti ti-circle-check"></i></div>
+            <div class="result-title">Campaign launched!</div>
+            <div class="result-sub" id="result-address">Your listing is now live and being marketed.</div>
+            <div class="result-steps">
+              <div class="result-step"><i class="ti ti-palette"></i> Listing flyer created in Canva</div>
+              <div class="result-step"><i class="ti ti-mail"></i> Vendor notified by email</div>
+              <div class="result-step"><i class="ti ti-brand-facebook"></i> Posted to Facebook</div>
+              <div class="result-step"><i class="ti ti-file-text"></i> Campaign report generated</div>
+              <div class="result-step"><i class="ti ti-message"></i> Agent notified by SMS</div>
+            </div>
+            <div class="result-actions">
+              <button class="btn" onclick="resetAll()"><i class="ti ti-refresh"></i> New listing</button>
             </div>
           </div>
-
         </div>
 
-        <!-- LOG STRIP -->
-        <div class="log-strip">
-          <span class="log-label">Log</span>
-          <div class="log-divider"></div>
-          <div class="log-ticker" id="log-ticker">Waiting for trigger…</div>
-        </div>
+      </div>
+
+      <!-- LOG STRIP -->
+      <div class="log-strip">
+        <span class="log-label">Log</span>
+        <div class="log-divider"></div>
+        <div class="log-ticker" id="log-ticker">Waiting for trigger…</div>
       </div>
 
     </div>
+
   </div>
+</div>
 
 <script>
+/* ── DRAG TO PAN ── */
+const canvasArea  = document.getElementById('canvasArea');
+const canvasWorld = document.getElementById('canvasWorld');
+let isDragging = false, startX = 0, startY = 0, panX = 40, panY = 40;
+
+function applyPan() {
+  canvasWorld.style.transform = `translate(${panX}px, ${panY}px)`;
+}
+applyPan();
+
+canvasArea.addEventListener('mousedown', e => {
+  if (e.target.closest('.result-overlay')) return;
+  isDragging = true;
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+  canvasArea.classList.add('dragging');
+});
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  applyPan();
+});
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+  canvasArea.classList.remove('dragging');
+});
+
+/* ── TOUCH DRAG ── */
+canvasArea.addEventListener('touchstart', e => {
+  if (e.touches.length !== 1) return;
+  isDragging = true;
+  startX = e.touches[0].clientX - panX;
+  startY = e.touches[0].clientY - panY;
+}, { passive: true });
+canvasArea.addEventListener('touchmove', e => {
+  if (!isDragging || e.touches.length !== 1) return;
+  panX = e.touches[0].clientX - startX;
+  panY = e.touches[0].clientY - startY;
+  applyPan();
+}, { passive: true });
+canvasArea.addEventListener('touchend', () => { isDragging = false; });
+
+/* ── DEMO FILL ── */
 const DEMO = {
   address:'12 Ocean View Terrace, Manly NSW 2095', price:'$2,450,000',
   beds:'4', baths:'2',
   agentName:'Sarah Chen', agentEmail:'sarah.chen@harborviewrealty.com.au', agentPhone:'+61 412 345 678',
   vendorName:'James & Lisa Thompson', vendorEmail:'j.thompson@icloud.com',
 };
-
 function fillDemo() {
-  document.getElementById('f-address').value = DEMO.address;
-  document.getElementById('f-price').value = DEMO.price;
-  document.getElementById('f-beds').value = DEMO.beds;
-  document.getElementById('f-baths').value = DEMO.baths;
-  document.getElementById('f-agent-name').value = DEMO.agentName;
+  document.getElementById('f-address').value   = DEMO.address;
+  document.getElementById('f-price').value     = DEMO.price;
+  document.getElementById('f-beds').value      = DEMO.beds;
+  document.getElementById('f-baths').value     = DEMO.baths;
+  document.getElementById('f-agent-name').value  = DEMO.agentName;
   document.getElementById('f-agent-email').value = DEMO.agentEmail;
   document.getElementById('f-agent-phone').value = DEMO.agentPhone;
   document.getElementById('f-vendor-name').value = DEMO.vendorName;
-  document.getElementById('f-vendor-email').value = DEMO.vendorEmail;
+  document.getElementById('f-vendor-email').value= DEMO.vendorEmail;
   const d = new Date(); d.setDate(d.getDate()+7); d.setHours(11,0,0);
   document.getElementById('f-open-home').value = d.toISOString().slice(0,16);
   setLog('Demo data filled', 'run');
@@ -595,6 +683,7 @@ function handleImages(input) {
   setLog(input.files.length + ' image(s) attached', 'run');
 }
 
+/* ── LOG ── */
 function setLog(msg, type) {
   const t = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const el = document.getElementById('log-ticker');
@@ -602,17 +691,18 @@ function setLog(msg, type) {
   el.innerHTML = `<span class="log-time">${t}</span>${msg}`;
 }
 
+/* ── NODE ANIMATION ── */
 const nodeOrder = [
-  {id:'trigger', label:'Webhook received',        ms:350},
-  {id:'fetch',   label:'Fetching listing data',   ms:700},
-  {id:'map',     label:'Mapping placeholders',    ms:450},
-  {id:'canva1',  label:'Creating Canva flyer',    ms:1100},
-  {id:'email',   label:'Sending vendor email',    ms:650},
-  {id:'fb',      label:'Posting to Facebook',     ms:800},
-  {id:'report',  label:'Generating report',       ms:550},
-  {id:'canva2',  label:'Retrieving flyer URL',    ms:600},
-  {id:'monday',  label:'Updating Monday status',  ms:450},
-  {id:'sms',     label:'Sending agent SMS',       ms:350},
+  {id:'trigger', label:'Webhook received',       ms:350},
+  {id:'fetch',   label:'Fetching listing data',  ms:700},
+  {id:'map',     label:'Mapping placeholders',   ms:450},
+  {id:'canva1',  label:'Creating Canva flyer',   ms:1100},
+  {id:'email',   label:'Sending vendor email',   ms:650},
+  {id:'fb',      label:'Posting to Facebook',    ms:800},
+  {id:'report',  label:'Generating report',      ms:550},
+  {id:'canva2',  label:'Retrieving flyer URL',   ms:600},
+  {id:'monday',  label:'Updating Monday status', ms:450},
+  {id:'sms',     label:'Sending agent SMS',      ms:350},
 ];
 
 function setNodeState(id, state) {
@@ -621,11 +711,9 @@ function setNodeState(id, state) {
   card.classList.remove('running','done');
   if (state === 'running') {
     card.classList.add('running');
-    bar.style.background = 'var(--blue)';
     bar.style.width = '55%';
   } else if (state === 'done') {
     card.classList.add('done');
-    bar.style.background = 'var(--green)';
     bar.style.width = '100%';
   }
 }
@@ -638,8 +726,9 @@ async function launchWorkflow() {
   if (!address) { setLog('Address is required', 'err'); return; }
 
   running = true;
-  const btns = [document.getElementById('launch-btn'), document.getElementById('topbar-launch')];
-  btns.forEach(b => { b.disabled = true; b.innerHTML = '<i class="ti ti-loader-2 spinner"></i> Launching…'; });
+  const btn = document.getElementById('launch-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2 spinner"></i> Launching…';
 
   const payload = {
     LISTING_NAME:   address,
@@ -659,10 +748,13 @@ async function launchWorkflow() {
   try {
     const params = new URLSearchParams(payload);
     const res = await fetch('/api/trigger?' + params.toString());
-    setLog(res.ok ? 'Webhook accepted (' + res.status + ')' : 'Webhook error: ' + res.status, res.ok ? 'ok' : 'err');
+    setLog(res.ok ? 'Webhook fired — check n8n' : 'Webhook error: ' + res.status, res.ok ? 'ok' : 'err');
   } catch(e) {
     setLog('Webhook failed: ' + e.message, 'err');
   }
+
+  /* reset pan so user sees the start of the workflow */
+  panX = 40; panY = 40; applyPan();
 
   for (const step of nodeOrder) {
     setNodeState(step.id, 'running');
@@ -675,7 +767,8 @@ async function launchWorkflow() {
   document.getElementById('result-address').textContent = address + ' is now live and being marketed.';
   document.getElementById('resultOverlay').classList.add('visible');
 
-  btns.forEach(b => { b.disabled = false; b.innerHTML = '<i class="ti ti-bolt"></i> Launch campaign'; });
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-bolt"></i> Launch campaign';
   running = false;
 }
 
