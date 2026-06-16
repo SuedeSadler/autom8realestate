@@ -200,22 +200,6 @@
   .upload-preview { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
   .upload-thumb { width: 38px; height: 38px; border-radius: 4px; object-fit: cover; border: 0.5px solid var(--border); }
 
-  .webhook-section {
-    padding: 10px 14px;
-    border-top: 0.5px solid var(--border);
-    flex-shrink: 0;
-  }
-  .webhook-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; margin-bottom: 5px; }
-  .webhook-input-wrap input {
-    width: 100%; padding: 6px 9px; font-size: 11px;
-    border: 0.5px solid var(--border); border-radius: 6px;
-    background: var(--bg); color: var(--text); font-family: inherit; outline: none;
-    transition: border-color .12s;
-  }
-  .webhook-input-wrap input:focus { border-color: var(--orange); }
-  .webhook-status { font-size: 10px; color: var(--text3); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
-  .webhook-status.set { color: var(--green); }
-
   .launch-btn {
     margin: 8px 14px 14px;
     padding: 10px;
@@ -442,16 +426,6 @@
 
         </div>
 
-        <div class="webhook-section">
-          <div class="webhook-label">n8n webhook URL</div>
-          <div class="webhook-input-wrap">
-            <input type="url" id="webhook-url" placeholder="https://your-n8n.app/webhook/..." oninput="updateWebhookStatus()"/>
-          </div>
-          <div class="webhook-status" id="webhook-status">
-            <i class="ti ti-link" style="font-size:11px"></i> Paste your n8n webhook URL above
-          </div>
-        </div>
-
         <button class="launch-btn" id="launch-btn" onclick="launchWorkflow()">
           <i class="ti ti-bolt"></i> Launch campaign
         </button>
@@ -621,18 +595,6 @@ function handleImages(input) {
   setLog(input.files.length + ' image(s) attached', 'run');
 }
 
-function updateWebhookStatus() {
-  const url = document.getElementById('webhook-url').value.trim();
-  const el = document.getElementById('webhook-status');
-  if (url.startsWith('http')) {
-    el.className = 'webhook-status set';
-    el.innerHTML = '<i class="ti ti-circle-check" style="font-size:11px"></i> Webhook URL set';
-  } else {
-    el.className = 'webhook-status';
-    el.innerHTML = '<i class="ti ti-link" style="font-size:11px"></i> Paste your n8n webhook URL above';
-  }
-}
-
 function setLog(msg, type) {
   const t = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const el = document.getElementById('log-ticker');
@@ -673,7 +635,6 @@ let running = false;
 async function launchWorkflow() {
   if (running) return;
   const address = document.getElementById('f-address').value.trim();
-  const webhookUrl = document.getElementById('webhook-url').value.trim();
   if (!address) { setLog('Address is required', 'err'); return; }
 
   running = true;
@@ -695,13 +656,12 @@ async function launchWorkflow() {
     SOURCE:         'listing-launcher-ui',
   };
 
-  if (webhookUrl.startsWith('http')) {
-    try {
-      const res = await fetch(webhookUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-      setLog(res.ok ? 'Webhook accepted (' + res.status + ')' : 'Webhook error: ' + res.status, res.ok ? 'ok' : 'err');
-    } catch(e) {
-      setLog('Webhook failed: ' + e.message, 'err');
-    }
+  try {
+    const params = new URLSearchParams(payload);
+    const res = await fetch('/api/trigger?' + params.toString());
+    setLog(res.ok ? 'Webhook accepted (' + res.status + ')' : 'Webhook error: ' + res.status, res.ok ? 'ok' : 'err');
+  } catch(e) {
+    setLog('Webhook failed: ' + e.message, 'err');
   }
 
   for (const step of nodeOrder) {
