@@ -335,7 +335,7 @@
     transition: opacity .3s;
   }
   .result-overlay.visible { opacity: 1; pointer-events: all; }
-  .result-card {
+  .result-card { max-height: 90vh; overflow-y: auto;
     background: var(--bg2); border: 0.5px solid var(--border);
     border-radius: 14px; padding: 28px 32px; width: 360px; text-align: center;
     box-shadow: 0 8px 32px rgba(0,0,0,.08);
@@ -444,6 +444,25 @@
         <div class="form-section-label">Campaign</div>
         <div class="field"><label>First open home</label><input type="datetime-local" id="f-open-home"/></div>
 
+      </div>
+
+      <!-- PIN OVERRIDE -->
+      <div style="margin:0 14px 6px;border-top:0.5px solid var(--border);padding-top:8px;">
+        <div id="pin-bar" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 2px;" onclick="togglePin()">
+          <i class="ti ti-lock" id="pin-icon" style="font-size:12px;color:var(--text3)"></i>
+          <span style="font-size:10px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.06em;">Admin override</span>
+          <i class="ti ti-chevron-down" id="pin-chevron" style="font-size:11px;color:var(--text3);margin-left:auto;transition:transform .2s;"></i>
+        </div>
+        <div id="pin-panel" style="display:none;padding:6px 0 4px;">
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="password" id="pin-input" placeholder="Enter PIN" maxlength="8"
+              style="flex:1;padding:6px 9px;font-size:12px;border:0.5px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;outline:none;"
+              onkeydown="if(event.key==='Enter')checkPin()"/>
+            <button onclick="checkPin()" style="padding:6px 11px;font-size:11px;font-weight:600;background:var(--text);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit;">Unlock</button>
+            <button onclick="resetRenderCount()" style="padding:6px 9px;font-size:11px;font-weight:500;background:transparent;color:var(--text3);border:0.5px solid var(--border2);border-radius:6px;cursor:pointer;font-family:inherit;white-space:nowrap;">Reset</button>
+          </div>
+          <div id="pin-msg" style="font-size:10px;margin-top:5px;display:none;padding:0 2px;"></div>
+        </div>
       </div>
 
       <button class="launch-btn" id="launch-btn" onclick="launchWorkflow()">
@@ -578,8 +597,9 @@
             <div class="result-icon"><i class="ti ti-circle-check"></i></div>
             <div class="result-title">Campaign launched!</div>
             <div class="result-sub" id="result-address">Your listing is now live and being marketed.</div>
+            <div id="result-flyer" style="margin-bottom:16px;"></div>
             <div class="result-steps">
-              <div class="result-step"><i class="ti ti-palette"></i> Listing flyer created in Canva</div>
+              <div class="result-step"><i class="ti ti-palette"></i> Listing flyer created</div>
               <div class="result-step"><i class="ti ti-mail"></i> Vendor notified by email</div>
               <div class="result-step"><i class="ti ti-brand-facebook"></i> Posted to Facebook</div>
               <div class="result-step"><i class="ti ti-file-text"></i> Campaign report generated</div>
@@ -649,38 +669,157 @@ canvasArea.addEventListener('touchmove', e => {
 }, { passive: true });
 canvasArea.addEventListener('touchend', () => { isDragging = false; });
 
-/* ── DEMO FILL ── */
+/* ── USAGE LIMIT (localStorage) ── */
+const LIMIT = 2;
+const STORAGE_KEY = 'a8re_renders';
+
+function getUsage() {
+  try { return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10); }
+  catch(e) { return 0; }
+}
+function incrementUsage() {
+  try { localStorage.setItem(STORAGE_KEY, getUsage() + 1); } catch(e) {}
+}
+function usageRemaining() { return Math.max(0, LIMIT - getUsage()); }
+
+/* ── DEMO DATA ── */
 const DEMO = {
   address:'12 Ocean View Terrace, Manly NSW 2095', price:'$2,450,000',
   beds:'4', baths:'2',
   agentName:'Sarah Chen', agentEmail:'sarah.chen@harborviewrealty.com.au', agentPhone:'+61 412 345 678',
   vendorName:'James & Lisa Thompson', vendorEmail:'j.thompson@icloud.com',
 };
+
+let isDemo = false;
+
 function fillDemo() {
-  document.getElementById('f-address').value   = DEMO.address;
-  document.getElementById('f-price').value     = DEMO.price;
-  document.getElementById('f-beds').value      = DEMO.beds;
-  document.getElementById('f-baths').value     = DEMO.baths;
-  document.getElementById('f-agent-name').value  = DEMO.agentName;
-  document.getElementById('f-agent-email').value = DEMO.agentEmail;
-  document.getElementById('f-agent-phone').value = DEMO.agentPhone;
-  document.getElementById('f-vendor-name').value = DEMO.vendorName;
-  document.getElementById('f-vendor-email').value= DEMO.vendorEmail;
+  isDemo = true;
+  document.getElementById('f-address').value    = DEMO.address;
+  document.getElementById('f-price').value      = DEMO.price;
+  document.getElementById('f-beds').value       = DEMO.beds;
+  document.getElementById('f-baths').value      = DEMO.baths;
+  document.getElementById('f-agent-name').value = DEMO.agentName;
+  document.getElementById('f-agent-email').value= DEMO.agentEmail;
+  document.getElementById('f-agent-phone').value= DEMO.agentPhone;
+  document.getElementById('f-vendor-name').value= DEMO.vendorName;
+  document.getElementById('f-vendor-email').value=DEMO.vendorEmail;
   const d = new Date(); d.setDate(d.getDate()+7); d.setHours(11,0,0);
-  document.getElementById('f-open-home').value = d.toISOString().slice(0,16);
-  setLog('Demo data filled', 'run');
+  document.getElementById('f-open-home').value  = d.toISOString().slice(0,16);
+  setLog('Demo data filled — flyer preview will be shown', 'run');
 }
 
-function handleImages(input) {
+/* clear demo flag if user edits any field */
+document.querySelectorAll('#f-address,#f-price,#f-beds,#f-baths,#f-agent-name,#f-agent-email,#f-agent-phone,#f-vendor-name,#f-vendor-email,#f-open-home')
+  .forEach(el => el.addEventListener('input', () => { isDemo = false; }));
+
+async function handleImages(input) {
+  isDemo = false;
   const preview = document.getElementById('img-preview');
   preview.innerHTML = '';
-  Array.from(input.files).slice(0,6).forEach(f => {
+  const files = Array.from(input.files).slice(0, 6);
+
+  setLog('Checking images…', 'run');
+
+  let rejected = 0;
+  for (const f of files) {
+    const base64 = await fileToBase64(f);
+
+    /* show a pending thumb while we check */
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;display:inline-block;';
     const img = document.createElement('img');
     img.className = 'upload-thumb';
     img.src = URL.createObjectURL(f);
-    preview.appendChild(img);
+    img.style.opacity = '0.4';
+    wrap.appendChild(img);
+    preview.appendChild(wrap);
+
+    let safe = true;
+    try {
+      const res = await fetch('/api/moderate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64 })
+      });
+      const data = await res.json();
+      safe = data.safe !== false;
+      if (!safe) {
+        rejected++;
+        /* replace thumb with rejected state */
+        wrap.innerHTML = '';
+        const x = document.createElement('div');
+        x.style.cssText = 'width:38px;height:38px;border-radius:4px;background:#FCEBEB;border:0.5px solid #f09595;display:flex;align-items:center;justify-content:center;font-size:18px;';
+        x.textContent = '🚫';
+        x.title = data.reason || 'Image rejected';
+        wrap.appendChild(x);
+      }
+    } catch(e) {
+      /* if moderation API fails, be safe and allow (fail open) */
+      safe = true;
+    }
+
+    if (safe) {
+      img.style.opacity = '1';
+    }
+  }
+
+  if (rejected > 0) {
+    setLog(rejected + ' image(s) rejected — explicit content detected', 'err');
+  } else {
+    setLog(files.length + ' image(s) attached and verified', 'ok');
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
-  setLog(input.files.length + ' image(s) attached', 'run');
+}
+
+/* block launch if any rejected images exist */
+function hasRejectedImages() {
+  return document.querySelector('#img-preview .upload-thumb[style*="opacity: 0"]') !== null ||
+    document.querySelectorAll('#img-preview div[title]').length > 0;
+}
+
+/* ── PRE-GENERATED DEMO FLYER ── */
+function buildDemoFlyer(data) {
+  return `
+  <div style="width:100%;max-width:500px;margin:0 auto;position:relative;overflow:hidden;font-family:'Helvetica Neue',Arial,sans-serif;background:#111;border-radius:12px;aspect-ratio:1/1;">
+    <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80"
+      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="Property">
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0.0) 30%,rgba(0,0,0,0.55) 58%,rgba(0,0,0,0.88) 75%,rgba(0,0,0,0.97) 100%);"></div>
+    <div style="position:absolute;top:16px;left:16px;background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.35);border-radius:30px;padding:6px 14px;">
+      <span style="color:#fff;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">New Listing</span>
+    </div>
+    <div style="position:absolute;top:16px;right:16px;background:#FF6D3F;border-radius:10px;padding:9px 15px;display:flex;align-items:center;gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#fff;flex-shrink:0;"></div>
+      <span style="color:#fff;font-size:14px;font-weight:900;">Autom8</span>
+      <span style="color:rgba(255,255,255,0.65);font-size:10px;font-weight:500;">Real Estate</span>
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;padding:0 22px 22px;">
+      <div style="line-height:0.9;margin-bottom:12px;">
+        <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.9);text-transform:uppercase;">New</div>
+        <div style="font-size:58px;font-weight:900;color:#FF6D3F;text-transform:uppercase;letter-spacing:-0.04em;line-height:0.85;">Listing</div>
+      </div>
+      <div style="width:44px;height:3px;background:#FF6D3F;border-radius:2px;margin-bottom:12px;"></div>
+      <div style="font-size:14px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:12px;line-height:1.2;">${data.address}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:3px;">${data.agentName}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);">${data.agentPhone} · ${data.agentEmail}</div>
+          <div style="font-size:11px;color:#FF6D3F;font-weight:600;margin-top:4px;">${data.price} · ${data.beds} bed · ${data.baths} bath</div>
+        </div>
+        <div style="width:60px;height:60px;border-radius:50%;border:2.5px solid #FF6D3F;overflow:hidden;flex-shrink:0;background:#444;">
+          <img src="https://i.pravatar.cc/60" style="width:100%;height:100%;object-fit:cover;" alt="Agent">
+        </div>
+      </div>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:11px;color:#9c9a92;margin-top:10px;">This is a pre-generated demo flyer. Real submissions generate a live flyer via the automation.</p>`;
 }
 
 /* ── LOG ── */
@@ -725,6 +864,26 @@ async function launchWorkflow() {
   const address = document.getElementById('f-address').value.trim();
   if (!address) { setLog('Address is required', 'err'); return; }
 
+  /* block if any images were rejected by moderation */
+  if (document.querySelectorAll('#img-preview div[title]').length > 0) {
+    setLog('Remove rejected images before launching', 'err');
+    return;
+  }
+
+  /* ── USAGE LIMIT CHECK (real submissions only) ── */
+  if (!isDemo && !isUnlocked() && usageRemaining() <= 0) {
+    setLog('Render limit reached (2/2) — contact us to generate more', 'err');
+    document.getElementById('resultOverlay').classList.add('visible');
+    document.getElementById('result-flyer').innerHTML = `
+      <div style="text-align:center;padding:16px 0;">
+        <div style="font-size:36px;margin-bottom:10px;">🚫</div>
+        <div style="font-size:14px;font-weight:600;color:#1a1916;margin-bottom:6px;">Render limit reached</div>
+        <div style="font-size:12px;color:#5f5e5a;line-height:1.6;">You've used both of your demo renders.<br>Get in touch to see the full platform.</div>
+      </div>`;
+    document.getElementById('result-address').textContent = '';
+    return;
+  }
+
   running = true;
   const btn = document.getElementById('launch-btn');
   btn.disabled = true;
@@ -742,29 +901,62 @@ async function launchWorkflow() {
     VENDOR_EMAIL:   document.getElementById('f-vendor-email').value,
     OPEN_HOME_DATE: document.getElementById('f-open-home').value,
     CAMPAIGN_DATE:  new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'long',year:'numeric'}),
-    SOURCE:         'listing-launcher-ui',
+    SOURCE:         isDemo ? 'demo' : 'listing-launcher-ui',
   };
 
-  try {
-    const params = new URLSearchParams(payload);
-    const res = await fetch('/api/trigger?' + params.toString());
-    setLog(res.ok ? 'Webhook fired — check n8n' : 'Webhook error: ' + res.status, res.ok ? 'ok' : 'err');
-  } catch(e) {
-    setLog('Webhook failed: ' + e.message, 'err');
+  if (!isDemo) {
+    /* real submission — hit the webhook and count the render */
+    try {
+      const params = new URLSearchParams(payload);
+      const res = await fetch('/api/trigger?' + params.toString(), {
+        headers: { 'x-usage-count': String(getUsage()) }
+      });
+      if (res.ok) {
+        incrementUsage();
+        const remaining = usageRemaining();
+        setLog(`Webhook fired ✓ — ${remaining} render${remaining === 1 ? '' : 's'} remaining`, 'ok');
+      } else {
+        setLog('Webhook error: ' + res.status, 'err');
+      }
+    } catch(e) {
+      setLog('Webhook failed: ' + e.message, 'err');
+    }
+  } else {
+    setLog('Demo mode — showing pre-generated flyer', 'run');
   }
 
-  /* reset pan so user sees the start of the workflow */
+  /* reset pan so animation starts from node 1 */
   panX = 40; panY = 40; applyPan();
 
   for (const step of nodeOrder) {
     setNodeState(step.id, 'running');
-    setLog(step.label + '…', 'run');
+    setLog((isDemo ? '[Demo] ' : '') + step.label + '…', 'run');
     await sleep(step.ms);
     setNodeState(step.id, 'done');
   }
 
   setLog('All nodes complete!', 'ok');
+
+  /* populate result overlay */
   document.getElementById('result-address').textContent = address + ' is now live and being marketed.';
+
+  const flyerEl = document.getElementById('result-flyer');
+  if (isDemo) {
+    flyerEl.innerHTML = buildDemoFlyer({
+      address, price: payload.PRICE,
+      beds: payload.BEDROOMS, baths: payload.BATHROOMS,
+      agentName: payload.AGENT_NAME,
+      agentPhone: payload.AGENT_PHONE,
+      agentEmail: payload.AGENT_EMAIL,
+    });
+  } else {
+    const remaining = usageRemaining();
+    flyerEl.innerHTML = `<p style="font-size:12px;color:#5f5e5a;text-align:center;padding:8px 0;">
+      Your listing flyer is being generated and will be sent to the agent.<br>
+      <span style="color:#854F0B;font-weight:500;">${remaining} demo render${remaining===1?'':'s'} remaining.</span>
+    </p>`;
+  }
+
   document.getElementById('resultOverlay').classList.add('visible');
 
   btn.disabled = false;
@@ -774,8 +966,57 @@ async function launchWorkflow() {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+/* ── PIN OVERRIDE ── */
+const ADMIN_PIN = '8472'; // change this to whatever you want
+const PIN_KEY   = 'a8re_admin';
+let pinOpen = false;
+
+function isUnlocked() {
+  try { return sessionStorage.getItem(PIN_KEY) === ADMIN_PIN; } catch(e) { return false; }
+}
+
+function togglePin() {
+  pinOpen = !pinOpen;
+  document.getElementById('pin-panel').style.display = pinOpen ? 'block' : 'none';
+  document.getElementById('pin-chevron').style.transform = pinOpen ? 'rotate(180deg)' : '';
+  if (pinOpen) setTimeout(() => document.getElementById('pin-input').focus(), 50);
+}
+
+function checkPin() {
+  const val = document.getElementById('pin-input').value.trim();
+  const msg = document.getElementById('pin-msg');
+  msg.style.display = 'block';
+  if (val === ADMIN_PIN) {
+    try { sessionStorage.setItem(PIN_KEY, ADMIN_PIN); } catch(e) {}
+    msg.style.color = 'var(--green)';
+    msg.textContent = '✓ Unlocked — render limit bypassed for this session';
+    document.getElementById('pin-icon').className = 'ti ti-lock-open';
+    document.getElementById('pin-icon').style.color = 'var(--green)';
+    document.getElementById('pin-input').value = '';
+    setLog('Admin mode active — no render limit', 'ok');
+  } else {
+    msg.style.color = '#A32D2D';
+    msg.textContent = '✗ Incorrect PIN';
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+function resetRenderCount() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  const msg = document.getElementById('pin-msg');
+  msg.style.display = 'block';
+  msg.style.color = 'var(--green)';
+  msg.textContent = '✓ Render count reset to 0';
+  setLog('Render count reset', 'ok');
+}
+
+/* patch the limit check to respect admin unlock */
+const _origUsageRemaining = usageRemaining;
+
 function resetAll() {
+  isDemo = false;
   document.getElementById('resultOverlay').classList.remove('visible');
+  document.getElementById('result-flyer').innerHTML = '';
   nodeOrder.forEach(s => {
     const card = document.getElementById('n-' + s.id);
     const bar  = document.getElementById('nb-' + s.id);
