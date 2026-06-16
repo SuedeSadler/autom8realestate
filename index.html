@@ -967,12 +967,11 @@ async function launchWorkflow() {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 /* ── PIN OVERRIDE ── */
-const ADMIN_PIN = '8472'; // change this to whatever you want
-const PIN_KEY   = 'a8re_admin';
+const PIN_KEY = 'a8re_admin_unlocked';
 let pinOpen = false;
 
 function isUnlocked() {
-  try { return sessionStorage.getItem(PIN_KEY) === ADMIN_PIN; } catch(e) { return false; }
+  try { return sessionStorage.getItem(PIN_KEY) === '1'; } catch(e) { return false; }
 }
 
 function togglePin() {
@@ -982,22 +981,38 @@ function togglePin() {
   if (pinOpen) setTimeout(() => document.getElementById('pin-input').focus(), 50);
 }
 
-function checkPin() {
+async function checkPin() {
   const val = document.getElementById('pin-input').value.trim();
   const msg = document.getElementById('pin-msg');
+  if (!val) return;
   msg.style.display = 'block';
-  if (val === ADMIN_PIN) {
-    try { sessionStorage.setItem(PIN_KEY, ADMIN_PIN); } catch(e) {}
-    msg.style.color = 'var(--green)';
-    msg.textContent = '✓ Unlocked — render limit bypassed for this session';
-    document.getElementById('pin-icon').className = 'ti ti-lock-open';
-    document.getElementById('pin-icon').style.color = 'var(--green)';
-    document.getElementById('pin-input').value = '';
-    setLog('Admin mode active — no render limit', 'ok');
-  } else {
+  msg.style.color = 'var(--text3)';
+  msg.textContent = 'Checking…';
+
+  try {
+    const res = await fetch('/api/verify-pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: val })
+    });
+    const data = await res.json();
+
+    if (data.valid) {
+      try { sessionStorage.setItem(PIN_KEY, '1'); } catch(e) {}
+      msg.style.color = 'var(--green)';
+      msg.textContent = '✓ Unlocked — render limit bypassed for this session';
+      document.getElementById('pin-icon').className = 'ti ti-lock-open';
+      document.getElementById('pin-icon').style.color = 'var(--green)';
+      document.getElementById('pin-input').value = '';
+      setLog('Admin mode active — no render limit', 'ok');
+    } else {
+      msg.style.color = '#A32D2D';
+      msg.textContent = '✗ Incorrect PIN';
+      document.getElementById('pin-input').value = '';
+    }
+  } catch(e) {
     msg.style.color = '#A32D2D';
-    msg.textContent = '✗ Incorrect PIN';
-    document.getElementById('pin-input').value = '';
+    msg.textContent = '✗ Could not verify PIN';
   }
 }
 
