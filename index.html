@@ -1144,28 +1144,46 @@ async function launchWorkflow() {
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader-2 spinner"></i> Launching…';
 
+  // debug — visible in browser console
+  console.log('uploadedPropertyImageUrl:', uploadedPropertyImageUrl);
+  console.log('uploadedAgentPhotoUrl:', uploadedAgentPhotoUrl);
+
+  const resolvedPropertyImage = uploadedPropertyImageUrl || DEMO.propertyImage;
+  const resolvedAgentPhoto    = uploadedAgentPhotoUrl || (AGENTS[document.getElementById('f-agent-select').value]?.photo) || DEMO.agentPhoto;
+
+  console.log('resolvedPropertyImage:', resolvedPropertyImage);
+  console.log('resolvedAgentPhoto:', resolvedAgentPhoto);
+
   const payload = {
-    LISTING_NAME:   address,
-    PRICE:          document.getElementById('f-price').value,
-    BEDROOMS:       document.getElementById('f-beds').value,
-    BATHROOMS:      document.getElementById('f-baths').value,
-    AGENT_NAME:     document.getElementById('f-agent-name').value,
-    AGENT_EMAIL:    document.getElementById('f-agent-email').value,
-    AGENT_PHONE:    document.getElementById('f-agent-phone').value,
-    VENDOR_NAME:    document.getElementById('f-vendor-name').value,
-    VENDOR_EMAIL:   document.getElementById('f-vendor-email').value,
-    OPEN_HOME_DATE: document.getElementById('f-open-home').value,
-    CAMPAIGN_DATE:  new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'long',year:'numeric'}),
-    SOURCE:         isDemo ? 'demo' : 'listing-launcher-ui',
-    AGENT_PHOTO_URL: uploadedAgentPhotoUrl || (AGENTS[document.getElementById('f-agent-select').value]?.photo) || DEMO.agentPhoto,
-    PROPERTY_IMAGE_URL: uploadedPropertyImageUrl || DEMO.propertyImage,
+    LISTING_NAME:       address,
+    PRICE:              document.getElementById('f-price').value,
+    BEDROOMS:           document.getElementById('f-beds').value,
+    BATHROOMS:          document.getElementById('f-baths').value,
+    AGENT_NAME:         document.getElementById('f-agent-name').value,
+    AGENT_EMAIL:        document.getElementById('f-agent-email').value,
+    AGENT_PHONE:        document.getElementById('f-agent-phone').value,
+    VENDOR_NAME:        document.getElementById('f-vendor-name').value,
+    VENDOR_EMAIL:       document.getElementById('f-vendor-email').value,
+    OPEN_HOME_DATE:     document.getElementById('f-open-home').value,
+    CAMPAIGN_DATE:      new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'long',year:'numeric'}),
+    SOURCE:             isDemo ? 'demo' : 'listing-launcher-ui',
+    AGENT_PHOTO_URL:    resolvedAgentPhoto,
+    PROPERTY_IMAGE_URL: resolvedPropertyImage,
   };
+
+  console.log('Full payload:', payload);
 
   /* always fire the webhook */
   let jobId = null;
   try {
     const params = new URLSearchParams(payload);
-    const headers = isDemo ? {} : { 'x-usage-count': String(getUsage()) };
+    const adminToken = sessionStorage.getItem('a8re_admin_token');
+    const headers = isDemo
+      ? {}
+      : {
+          'x-usage-count': String(getUsage()),
+          ...(adminToken ? { 'x-admin-token': adminToken } : {})
+        };
     const res = await fetch('/api/trigger?' + params.toString(), { headers });
     const data = await res.json();
     if (res.ok) {
@@ -1365,7 +1383,11 @@ async function checkPin() {
     const data = await res.json();
 
     if (data.valid) {
-      try { sessionStorage.setItem(PIN_KEY, '1'); } catch(e) {}
+      const adminToken = data.token || '1';
+      try {
+        sessionStorage.setItem(PIN_KEY, '1');
+        sessionStorage.setItem('a8re_admin_token', adminToken);
+      } catch(e) {}
       msg.style.color = 'var(--green)';
       msg.textContent = '✓ Unlocked — render limit bypassed for this session';
       document.getElementById('pin-icon').className = 'ti ti-lock-open';

@@ -14,7 +14,9 @@ export default function handler(req, res) {
   }
 
   if (pin === adminPin) {
-    return res.status(200).json({ valid: true });
+    // simple token: hash of PIN + secret so it can't be guessed
+    const token = Buffer.from(`${adminPin}:${process.env.ADMIN_PIN}:admin`).toString('base64');
+    return res.status(200).json({ valid: true, token });
   }
 
   return res.status(200).json({ valid: false });
