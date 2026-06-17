@@ -1547,6 +1547,79 @@ function resetRenderCount() {
 /* patch the limit check to respect admin unlock */
 const _origUsageRemaining = usageRemaining;
 
+
+/* ── LIGHTBOX ── */
+let currentFlyerUrl = null;
+
+function openLightbox() {
+  if (!currentFlyerUrl) return;
+  document.getElementById('lightbox-img').src = currentFlyerUrl;
+  document.getElementById('lightbox').classList.add('visible');
+}
+
+function closeLightbox(e) {
+  if (e && e.target !== document.getElementById('lightbox') && e.target.tagName !== 'BUTTON') return;
+  document.getElementById('lightbox').classList.remove('visible');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('lightbox').classList.remove('visible');
+});
+
+async function sendFlyerEmail() {
+  const email = document.getElementById('flyer-email-input').value.trim();
+  const btn   = document.getElementById('flyer-email-btn');
+  const msg   = document.getElementById('email-msg');
+  const address = document.getElementById('result-address').textContent;
+
+  if (!email) {
+    msg.style.display = 'block';
+    msg.style.color = '#A32D2D';
+    msg.textContent = 'Please enter a valid email';
+    return;
+  }
+  if (!currentFlyerUrl) {
+    msg.style.display = 'block';
+    msg.style.color = '#A32D2D';
+    msg.textContent = 'No flyer available to send';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  msg.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/send-flyer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        flyerUrl: currentFlyerUrl,
+        listingName: address.replace(' is now live and being marketed.', ''),
+      })
+    });
+    const data = await res.json();
+    msg.style.display = 'block';
+    if (res.ok) {
+      msg.style.color = 'var(--green)';
+      msg.textContent = '✓ Flyer sent to ' + email;
+      btn.textContent = 'Sent ✓';
+    } else {
+      msg.style.color = '#A32D2D';
+      msg.textContent = 'Failed: ' + (data.detail || data.error);
+      btn.disabled = false;
+      btn.textContent = 'Send';
+    }
+  } catch(e) {
+    msg.style.display = 'block';
+    msg.style.color = '#A32D2D';
+    msg.textContent = 'Send failed — ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Send';
+  }
+}
+
 function resetAll() {
   isDemo = false;
   currentFlyerUrl = null;
