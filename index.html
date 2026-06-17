@@ -433,16 +433,32 @@
         <div class="upload-preview" id="img-preview"></div>
 
         <div class="form-section-label">Agent</div>
+
+        <!-- Agent selector -->
+        <div class="field" style="margin-bottom:10px;">
+          <label>Select agent</label>
+          <select id="f-agent-select" onchange="selectAgent(this.value)"
+            style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;outline:none;">
+            <option value="">— Choose or fill in manually —</option>
+            <option value="james">James Hargreaves (Demo agent)</option>
+            <option value="custom">+ Enter my own details</option>
+          </select>
+        </div>
+
+        <!-- Agent photo row -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          <div id="agent-photo-preview" style="flex-shrink:0;">
-            <div style="width:48px;height:48px;border-radius:50%;background:var(--bg);border:0.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;">
+          <div id="agent-photo-preview" style="flex-shrink:0;cursor:pointer;" onclick="document.getElementById('agent-photo-upload').click()" title="Click to upload agent photo">
+            <div id="agent-photo-placeholder" style="width:48px;height:48px;border-radius:50%;background:var(--bg);border:0.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;transition:border-color .12s;">
               <i class="ti ti-user" style="font-size:20px;color:var(--text3);"></i>
             </div>
           </div>
-          <div style="flex:1;font-size:11px;color:var(--text3);line-height:1.5;">
-            Agent photo appears here<br>after quick fill or upload
+          <div style="flex:1;">
+            <div style="font-size:11px;color:var(--text2);font-weight:500;margin-bottom:2px;" id="agent-photo-label">Agent photo</div>
+            <div style="font-size:10px;color:var(--text3);" id="agent-photo-hint">Click photo to upload your own</div>
+            <input type="file" id="agent-photo-upload" accept="image/*" style="display:none;" onchange="handleAgentPhoto(this)">
           </div>
         </div>
+
         <div class="field"><label>Name</label><input type="text" id="f-agent-name" placeholder="James Hargreaves"/></div>
         <div class="field"><label>Email</label><input type="email" id="f-agent-email" placeholder="james@autom8realestate.co.nz"/></div>
         <div class="field"><label>Phone</label><input type="tel" id="f-agent-phone" placeholder="+64 21 000 000"/></div>
@@ -735,8 +751,77 @@ function fillDemo() {
   agentThumb.style.cssText = 'width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid var(--orange);';
   agentPreview.appendChild(agentThumb);
 
+  /* set agent dropdown to James */
+  document.getElementById('f-agent-select').value = 'james';
+  agentPhotoBase64 = null;
   setLog('Demo data filled — flyer preview will be shown', 'run');
 }
+
+/* ── SAVED AGENTS ── */
+const AGENTS = {
+  james: {
+    name:    'James Hargreaves',
+    email:   'james.hargreaves@autom8realestate.co.nz',
+    phone:   '+64 21 345 678',
+    photo:   'https://res.cloudinary.com/dqdqcdtj7/image/upload/q_auto/f_auto/v1781651073/realestate_agent_kvsuv2.png',
+  }
+};
+
+let agentPhotoBase64 = null; // stores custom uploaded agent photo
+
+function selectAgent(val) {
+  isDemo = false;
+  if (!val || val === 'custom') {
+    /* clear fields for manual entry */
+    document.getElementById('f-agent-name').value  = '';
+    document.getElementById('f-agent-email').value = '';
+    document.getElementById('f-agent-phone').value = '';
+    setAgentPhotoPreview(null);
+    document.getElementById('agent-photo-hint').textContent = 'Click photo to upload your own';
+    agentPhotoBase64 = null;
+    return;
+  }
+  const agent = AGENTS[val];
+  if (!agent) return;
+  document.getElementById('f-agent-name').value  = agent.name;
+  document.getElementById('f-agent-email').value = agent.email;
+  document.getElementById('f-agent-phone').value = agent.phone;
+  setAgentPhotoPreview(agent.photo);
+  agentPhotoBase64 = null; // use URL not base64
+  document.getElementById('agent-photo-hint').textContent = 'Click photo to upload a different one';
+}
+
+function setAgentPhotoPreview(src) {
+  const wrap = document.getElementById('agent-photo-preview');
+  if (src) {
+    wrap.innerHTML = `<img src="${src}"
+      style="width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid var(--orange);"
+      alt="Agent">`;
+  } else {
+    wrap.innerHTML = `<div id="agent-photo-placeholder"
+      style="width:48px;height:48px;border-radius:50%;background:var(--bg);border:0.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;">
+      <i class="ti ti-user" style="font-size:20px;color:var(--text3);"></i></div>`;
+  }
+}
+
+async function handleAgentPhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+
+  /* show preview immediately */
+  const objectUrl = URL.createObjectURL(file);
+  setAgentPhotoPreview(objectUrl);
+  document.getElementById('agent-photo-hint').textContent = 'Custom photo uploaded';
+
+  /* convert to base64 to send through payload */
+  agentPhotoBase64 = await fileToBase64(file);
+
+  /* clear any saved agent selection since they've overridden it */
+  document.getElementById('f-agent-select').value = 'custom';
+  isDemo = false;
+}
+
+/* ── END SAVED AGENTS ── */
 
 /* clear demo flag if user edits any field */
 document.querySelectorAll('#f-address,#f-price,#f-beds,#f-baths,#f-agent-name,#f-agent-email,#f-agent-phone,#f-vendor-name,#f-vendor-email,#f-open-home')
@@ -936,6 +1021,7 @@ async function launchWorkflow() {
     OPEN_HOME_DATE: document.getElementById('f-open-home').value,
     CAMPAIGN_DATE:  new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'long',year:'numeric'}),
     SOURCE:         isDemo ? 'demo' : 'listing-launcher-ui',
+    AGENT_PHOTO_URL: agentPhotoBase64 || (AGENTS[document.getElementById('f-agent-select').value]?.photo) || DEMO.agentPhoto,
   };
 
   /* always fire the webhook */
