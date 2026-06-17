@@ -448,6 +448,94 @@
     .canvas-section { height: 300px; }
     .result-card { padding: 16px 14px; }
   }
+
+  /* ── LIGHTBOX ── */
+  .lightbox {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+    padding: 20px;
+  }
+  .lightbox.visible { opacity: 1; pointer-events: all; }
+  .lightbox img {
+    max-width: 100%; max-height: 90vh;
+    border-radius: 10px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  }
+  .lightbox-close {
+    position: absolute; top: 16px; right: 20px;
+    color: #fff; font-size: 28px; cursor: pointer;
+    background: none; border: none; line-height: 1;
+    opacity: .7; transition: opacity .15s;
+  }
+  .lightbox-close:hover { opacity: 1; }
+
+  /* ── EMAIL FORM ── */
+  .email-flyer-form {
+    display: flex; gap: 6px; margin-top: 12px;
+  }
+  .email-flyer-form input {
+    flex: 1; padding: 8px 10px; font-size: 12px;
+    border: 0.5px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--text);
+    font-family: inherit; outline: none;
+    transition: border-color .12s;
+  }
+  .email-flyer-form input:focus { border-color: var(--orange); }
+  .email-flyer-form button {
+    padding: 8px 14px; font-size: 12px; font-weight: 600;
+    background: var(--orange); color: #fff;
+    border: none; border-radius: 6px; cursor: pointer;
+    font-family: inherit; white-space: nowrap;
+    transition: background .12s;
+  }
+  .email-flyer-form button:hover { background: var(--orange-dark); }
+  .email-flyer-form button:disabled { opacity: .5; cursor: not-allowed; }
+  .email-msg { font-size: 11px; margin-top: 5px; text-align: center; }
+
+  /* ── LIGHTBOX ── */
+  .lightbox {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+    padding: 20px;
+  }
+  .lightbox.visible { opacity: 1; pointer-events: all; }
+  .lightbox img {
+    max-width: 100%; max-height: 90vh;
+    border-radius: 10px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  }
+  .lightbox-close {
+    position: absolute; top: 16px; right: 20px;
+    color: #fff; font-size: 32px; cursor: pointer;
+    background: none; border: none; line-height: 1;
+    opacity: .7; transition: opacity .15s; font-family: inherit;
+  }
+  .lightbox-close:hover { opacity: 1; }
+  .email-flyer-form { display: flex; gap: 6px; }
+  .email-flyer-form input {
+    flex: 1; padding: 8px 10px; font-size: 12px;
+    border: 0.5px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--text);
+    font-family: inherit; outline: none; transition: border-color .12s;
+  }
+  .email-flyer-form input:focus { border-color: var(--orange); }
+  .email-flyer-form button {
+    padding: 8px 14px; font-size: 12px; font-weight: 600;
+    background: var(--orange); color: #fff;
+    border: none; border-radius: 6px; cursor: pointer;
+    font-family: inherit; white-space: nowrap; transition: background .12s;
+  }
+  .email-flyer-form button:hover { background: var(--orange-dark); }
+  .email-flyer-form button:disabled { opacity: .5; cursor: not-allowed; }
+  .email-msg { font-size: 11px; margin-top: 5px; text-align: center; }
 </style>
 </head>
 <body>
@@ -707,7 +795,17 @@
             <div class="result-icon"><i class="ti ti-circle-check"></i></div>
             <div class="result-title">Campaign launched!</div>
             <div class="result-sub" id="result-address">Your listing is now live and being marketed.</div>
-            <div id="result-flyer" style="margin-bottom:16px;"></div>
+            <div id="result-flyer" style="margin-bottom:14px;cursor:pointer;" onclick="openLightbox()"></div>
+
+            <div id="email-flyer-section" style="display:none;margin-bottom:14px;">
+              <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;text-align:left;">Email a copy</div>
+              <div class="email-flyer-form">
+                <input type="email" id="flyer-email-input" placeholder="Enter your email"/>
+                <button id="flyer-email-btn" onclick="sendFlyerEmail()">Send</button>
+              </div>
+              <div class="email-msg" id="email-msg" style="display:none;"></div>
+            </div>
+
             <div class="result-steps">
               <div class="result-step"><i class="ti ti-palette"></i> Listing flyer created</div>
               <div class="result-step"><i class="ti ti-mail"></i> Vendor notified by email</div>
@@ -1274,12 +1372,19 @@ async function launchWorkflow() {
 
   const flyerEl = document.getElementById('result-flyer');
   if (isDemo) {
+    currentFlyerUrl = 'https://res.cloudinary.com/dqdqcdtj7/image/upload/q_auto/f_auto/v1781652206/44014C19-D585-4EDB-AD7D-B9816E3C3B9C_r69eyd.jpg';
     flyerEl.innerHTML = `
-      <img src="https://res.cloudinary.com/dqdqcdtj7/image/upload/q_auto/f_auto/v1781652206/44014C19-D585-4EDB-AD7D-B9816E3C3B9C_r69eyd.jpg"
-        style="width:100%;border-radius:8px;display:block;" alt="Demo listing flyer">
+      <div style="position:relative;">
+        <img src="${currentFlyerUrl}"
+          style="width:100%;border-radius:8px;display:block;" alt="Demo listing flyer">
+        <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.5);color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;">
+          <i class="ti ti-zoom-in" style="font-size:11px;"></i> Click to enlarge
+        </div>
+      </div>
       <p style="text-align:center;font-size:11px;color:#9c9a92;margin-top:8px;">
         Pre-generated demo flyer &middot; Real submissions generate a live version
       </p>`;
+    document.getElementById('email-flyer-section').style.display = 'block';
   } else {
     /* show a spinner while we poll for the generated flyer */
     const remaining = usageRemaining();
@@ -1326,14 +1431,21 @@ async function pollForFlyer(jobId) {
         const resultEl  = document.getElementById('flyer-result');
         if (loadingEl) loadingEl.style.display = 'none';
         if (resultEl) {
+          currentFlyerUrl = data.flyerUrl;
           resultEl.style.display = 'block';
           resultEl.innerHTML = `
-            <img src="${data.flyerUrl}"
-              style="width:100%;border-radius:8px;display:block;margin-top:4px;"
-              alt="Generated listing flyer">
+            <div style="position:relative;">
+              <img src="${currentFlyerUrl}"
+                style="width:100%;border-radius:8px;display:block;margin-top:4px;"
+                alt="Generated listing flyer">
+              <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.5);color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;">
+                <i class="ti ti-zoom-in" style="font-size:11px;"></i> Click to enlarge
+              </div>
+            </div>
             <p style="text-align:center;font-size:11px;color:#9c9a92;margin-top:8px;">
               Live generated flyer &middot; Sent to agent and vendor
             </p>`;
+          document.getElementById('email-flyer-section').style.display = 'block';
           setLog('Flyer ready ✓', 'ok');
         }
         return;
@@ -1419,8 +1531,14 @@ const _origUsageRemaining = usageRemaining;
 
 function resetAll() {
   isDemo = false;
+  currentFlyerUrl = null;
   document.getElementById('resultOverlay').classList.remove('visible');
   document.getElementById('result-flyer').innerHTML = '';
+  document.getElementById('email-flyer-section').style.display = 'none';
+  document.getElementById('flyer-email-input').value = '';
+  document.getElementById('email-msg').style.display = 'none';
+  const emailBtn = document.getElementById('flyer-email-btn');
+  if (emailBtn) { emailBtn.disabled = false; emailBtn.textContent = 'Send'; }
   nodeOrder.forEach(s => {
     const card = document.getElementById('n-' + s.id);
     const bar  = document.getElementById('nb-' + s.id);
@@ -1430,5 +1548,17 @@ function resetAll() {
   setLog('Waiting for trigger…');
 }
 </script>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+  <img id="lightbox-img" src="" alt="Listing flyer">
+</div>
+
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+  <img id="lightbox-img" src="" alt="Listing flyer">
+</div>
 </body>
 </html>
