@@ -810,12 +810,26 @@
         <!-- SUCCESS OVERLAY -->
         <div class="result-overlay" id="resultOverlay">
           <div class="result-card">
-            <div class="result-icon"><i class="ti ti-circle-check"></i></div>
-            <div class="result-title">Campaign launched!</div>
-            <div class="result-sub" id="result-address">Your listing is now live and being marketed.</div>
-            <div id="result-flyer" style="margin-bottom:14px;cursor:pointer;" onclick="openLightbox()"></div>
 
-            <div id="email-flyer-section" style="display:none;margin-bottom:14px;">
+            <!-- Close button top right -->
+            <button onclick="resetAll()" style="position:absolute;top:12px;right:14px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;line-height:1;padding:4px;" title="Close">
+              <i class="ti ti-x"></i>
+            </button>
+
+            <!-- Header row -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <div style="font-size:28px;color:var(--green);flex-shrink:0;"><i class="ti ti-circle-check"></i></div>
+              <div>
+                <div class="result-title" style="margin-bottom:2px;">Campaign launched!</div>
+                <div class="result-sub" id="result-address" style="margin-bottom:0;">Your listing is now live.</div>
+              </div>
+            </div>
+
+            <!-- Flyer preview -->
+            <div id="result-flyer" style="margin-bottom:12px;cursor:pointer;" onclick="openLightbox()"></div>
+
+            <!-- Email a copy -->
+            <div id="email-flyer-section" style="display:none;margin-bottom:12px;">
               <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;text-align:left;">Email a copy</div>
               <div class="email-flyer-form">
                 <input type="email" id="flyer-email-input" placeholder="Enter your email"/>
@@ -824,13 +838,15 @@
               <div class="email-msg" id="email-msg" style="display:none;"></div>
             </div>
 
-            <div class="result-steps">
-              <div class="result-step"><i class="ti ti-palette"></i> Listing flyer created</div>
-              <div class="result-step"><i class="ti ti-mail"></i> Vendor notified by email</div>
-              <div class="result-step"><i class="ti ti-brand-facebook"></i> Posted to Facebook</div>
-              <div class="result-step"><i class="ti ti-file-text"></i> Campaign report generated</div>
-              <div class="result-step"><i class="ti ti-message"></i> Agent notified by SMS</div>
+            <!-- Compact steps -->
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">
+              <span style="font-size:10px;background:var(--green-light);color:var(--green);padding:3px 8px;border-radius:20px;font-weight:500;"><i class="ti ti-check" style="font-size:10px;"></i> Flyer</span>
+              <span style="font-size:10px;background:var(--green-light);color:var(--green);padding:3px 8px;border-radius:20px;font-weight:500;"><i class="ti ti-check" style="font-size:10px;"></i> Vendor email</span>
+              <span style="font-size:10px;background:var(--green-light);color:var(--green);padding:3px 8px;border-radius:20px;font-weight:500;"><i class="ti ti-check" style="font-size:10px;"></i> Facebook</span>
+              <span style="font-size:10px;background:var(--green-light);color:var(--green);padding:3px 8px;border-radius:20px;font-weight:500;"><i class="ti ti-check" style="font-size:10px;"></i> Report</span>
+              <span style="font-size:10px;background:var(--green-light);color:var(--green);padding:3px 8px;border-radius:20px;font-weight:500;"><i class="ti ti-check" style="font-size:10px;"></i> SMS</span>
             </div>
+
             <div class="result-actions">
               <button class="btn" onclick="resetAll()"><i class="ti ti-refresh"></i> New listing</button>
             </div>
