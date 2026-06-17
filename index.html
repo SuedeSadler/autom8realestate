@@ -327,12 +327,13 @@
 
   /* ── SUCCESS OVERLAY ── */
   .result-overlay {
-    position: absolute; inset: 0;
-    background: rgba(248,247,244,.92);
+    position: fixed; inset: 0;
+    background: rgba(248,247,244,.94);
     display: flex; align-items: center; justify-content: center;
-    z-index: 50;
+    z-index: 200;
     opacity: 0; pointer-events: none;
     transition: opacity .3s;
+    padding: 16px;
   }
   .result-overlay.visible { opacity: 1; pointer-events: all; }
   .result-card { max-height: 90vh; overflow-y: auto;
@@ -364,6 +365,89 @@
   /* ── SPINNER ── */
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinner { display: inline-block; animation: spin .7s linear infinite; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    /* prevent iOS zoom on input focus — needs 16px */
+    .field input,
+    .field select,
+    #pin-input,
+    #webhook-url { font-size: 16px !important; }
+
+
+    /* topbar */
+    .topbar { padding: 0 16px; height: 48px; }
+    .logo-name { font-size: 13px; }
+
+    /* hero — tighter on mobile */
+    .hero {
+      padding: 24px 16px 20px;
+      max-width: 100%;
+    }
+    .hero-title { font-size: 22px; }
+    .hero-sub { font-size: 12px; }
+    .hero-pills { gap: 5px; }
+    .pill { font-size: 10px; padding: 3px 8px; }
+
+    /* main layout — stack vertically */
+    .main-layout {
+      flex-direction: column;
+    }
+
+    /* form panel — full width, not sticky, not fixed height */
+    .form-panel {
+      width: 100%;
+      min-width: 100%;
+      position: static;
+      height: auto;
+      border-right: none;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .form-scroll {
+      max-height: none;
+      overflow-y: visible;
+      padding: 10px 16px 14px;
+    }
+
+    /* launch button full width */
+    .launch-btn { margin: 8px 16px 16px; }
+
+    /* PIN section */
+    .form-panel > div[style*="margin:0 14px"] {
+      margin: 0 16px 6px !important;
+    }
+
+    /* canvas section — fixed height on mobile so it's visible */
+    .canvas-section {
+      height: 360px;
+      flex: none;
+    }
+    .canvas-header { padding: 10px 14px 8px; }
+    .canvas-sub { display: none; } /* hide verbose subtitle on small screens */
+
+    /* log strip */
+    .log-strip { padding: 0 14px; }
+
+    /* result overlay card — full width friendly */
+    .result-card {
+      width: calc(100vw - 32px);
+      max-width: 400px;
+      padding: 20px 18px;
+    }
+    .result-title { font-size: 15px; }
+    .result-sub { font-size: 11px; }
+    .result-step { font-size: 11px; }
+
+    /* demo bar */
+    .demo-bar { margin: 10px 16px 0; }
+  }
+
+  @media (max-width: 420px) {
+    .hero-title { font-size: 20px; }
+    .hero-pills { display: none; } /* too cramped on tiny screens */
+    .canvas-section { height: 300px; }
+    .result-card { padding: 16px 14px; }
+  }
 </style>
 </head>
 <body>
@@ -498,7 +582,7 @@
     </div>
 
     <!-- CANVAS SECTION -->
-    <div class="canvas-section">
+    <div class="canvas-section" id="canvasSection">
 
       <div class="canvas-header">
         <div class="canvas-header-left">
@@ -1047,17 +1131,72 @@ async function launchWorkflow() {
     setLog('Webhook failed: ' + e.message, 'err');
   }
 
-  /* reset pan so animation starts from node 1 */
+  /* ── SCROLL TO CANVAS & LOCK VIEW DURING ANIMATION ── */
+  const canvasSection = document.getElementById('canvasSection');
+  const isMobile = window.innerWidth <= 768;
+
+  // scroll canvas into view smoothly
+  canvasSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // small delay to let scroll settle before animating
+  await sleep(400);
+
+  // reset pan so animation starts from node 1
   panX = 40; panY = 40; applyPan();
 
+  function smoothPanTo(targetX, targetY, duration) {
+    return new Promise(resolve => {
+      const startX = panX, startY = panY;
+      const startTime = performance.now();
+      function step(now) {
+        const t = Math.min((now - startTime) / duration, 1);
+        const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+        panX = startX + (targetX - startX) * ease;
+        panY = startY + (targetY - startY) * ease;
+        applyPan();
+        if (t < 1) requestAnimationFrame(step);
+        else resolve();
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  // Calculate pan so the active node is centred in the visible canvas
+  function panToNode(nodeId) {
+    const card    = document.getElementById('n-' + nodeId);
+    const canvas  = document.getElementById('canvasArea');
+    if (!card || !canvas) return;
+
+    const nodeLeft = parseInt(card.style.left, 10);
+    const nodeTop  = parseInt(card.style.top, 10);
+    const nodeW    = card.offsetWidth  || 150;
+    const nodeH    = card.offsetHeight || 90;
+    const canvasW  = canvas.offsetWidth;
+    const canvasH  = canvas.offsetHeight;
+
+    // target pan puts the node centre in the canvas centre, with padding
+    const padding  = 24;
+    const targetX  = Math.min(padding, (canvasW / 2) - (nodeLeft + nodeW / 2));
+    const targetY  = Math.min(padding, (canvasH / 2) - (nodeTop  + nodeH / 2));
+
+    return smoothPanTo(targetX, targetY, 320);
+  }
+
   for (const step of nodeOrder) {
+    // pan to node BEFORE it fires so user sees it light up
+    await panToNode(step.id);
     setNodeState(step.id, 'running');
     setLog((isDemo ? '[Demo] ' : '') + step.label + '…', 'run');
     await sleep(step.ms);
     setNodeState(step.id, 'done');
   }
 
-  setLog('All nodes complete!', 'ok');
+  // pan to last node so it's fully visible before popup
+  await panToNode('sms');
+  await sleep(600);
+
+  setLog('All nodes complete! 🎉', 'ok');
+  await sleep(500);
 
   /* populate result overlay */
   document.getElementById('result-address').textContent = address + ' is now live and being marketed.';
