@@ -2,11 +2,11 @@ export default async function handler(req, res) {
   const { jobId } = req.query;
   if (!jobId) return res.status(400).json({ error: 'jobId required' });
 
-  const kvUrl   = process.env.UPSTASH_REDIS_REST_URL;
-  const kvToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const kvUrl   = process.env.KV_REST_API_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN;
 
   if (!kvUrl || !kvToken) {
-    return res.status(500).json({ error: 'Upstash not configured' });
+    return res.status(500).json({ error: 'KV store not configured' });
   }
 
   try {
