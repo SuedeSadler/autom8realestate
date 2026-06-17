@@ -851,7 +851,8 @@ const AGENTS = {
   }
 };
 
-let agentPhotoBase64 = null; // stores custom uploaded agent photo
+let agentPhotoBase64 = null;        // stores custom uploaded agent photo (base64 fallback)
+let uploadedAgentPhotoUrl = null;   // stores Cloudinary URL of uploaded agent photo
 
 function selectAgent(val) {
   isDemo = false;
@@ -893,14 +894,30 @@ async function handleAgentPhoto(input) {
   const file = input.files[0];
 
   /* show preview immediately */
-  const objectUrl = URL.createObjectURL(file);
-  setAgentPhotoPreview(objectUrl);
-  document.getElementById('agent-photo-hint').textContent = 'Custom photo uploaded';
+  setAgentPhotoPreview(URL.createObjectURL(file));
+  document.getElementById('agent-photo-hint').textContent = 'Uploading…';
 
-  /* convert to base64 to send through payload */
-  agentPhotoBase64 = await fileToBase64(file);
+  const base64 = await fileToBase64(file);
+  agentPhotoBase64 = base64; // fallback
 
-  /* clear any saved agent selection since they've overridden it */
+  /* upload to Cloudinary */
+  try {
+    const res = await fetch('/api/upload-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64: base64, folder: 'autom8-agents' })
+    });
+    const data = await res.json();
+    if (data.url) {
+      uploadedAgentPhotoUrl = data.url;
+      document.getElementById('agent-photo-hint').textContent = 'Agent photo uploaded ✓';
+    } else {
+      document.getElementById('agent-photo-hint').textContent = 'Upload failed — will use base64';
+    }
+  } catch(e) {
+    document.getElementById('agent-photo-hint').textContent = 'Click photo to upload your own';
+  }
+
   document.getElementById('f-agent-select').value = 'custom';
   isDemo = false;
 }
@@ -911,19 +928,24 @@ async function handleAgentPhoto(input) {
 document.querySelectorAll('#f-address,#f-price,#f-beds,#f-baths,#f-agent-name,#f-agent-email,#f-agent-phone,#f-vendor-name,#f-vendor-email,#f-open-home')
   .forEach(el => el.addEventListener('input', () => { isDemo = false; }));
 
+let uploadedPropertyImageUrl = null; // stores Cloudinary URL of first property image
+
 async function handleImages(input) {
   isDemo = false;
+  uploadedPropertyImageUrl = null;
   const preview = document.getElementById('img-preview');
   preview.innerHTML = '';
   const files = Array.from(input.files).slice(0, 6);
 
-  setLog('Checking images…', 'run');
+  setLog('Checking & uploading images…', 'run');
 
   let rejected = 0;
+  let firstUploaded = false;
+
   for (const f of files) {
     const base64 = await fileToBase64(f);
 
-    /* show a pending thumb while we check */
+    /* show pending thumb */
     const wrap = document.createElement('div');
     wrap.style.cssText = 'position:relative;display:inline-block;';
     const img = document.createElement('img');
@@ -931,41 +953,71 @@ async function handleImages(input) {
     img.src = URL.createObjectURL(f);
     img.style.opacity = '0.4';
     wrap.appendChild(img);
+
+    /* uploading spinner badge */
+    const badge = document.createElement('div');
+    badge.style.cssText = 'position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:9px;';
+    badge.textContent = '⏳';
+    wrap.appendChild(badge);
     preview.appendChild(wrap);
 
+    /* 1. moderation check */
     let safe = true;
     try {
-      const res = await fetch('/api/moderate', {
+      const modRes = await fetch('/api/moderate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageBase64: base64 })
       });
-      const data = await res.json();
-      safe = data.safe !== false;
+      const modData = await modRes.json();
+      safe = modData.safe !== false;
       if (!safe) {
         rejected++;
-        /* replace thumb with rejected state */
         wrap.innerHTML = '';
         const x = document.createElement('div');
         x.style.cssText = 'width:38px;height:38px;border-radius:4px;background:#FCEBEB;border:0.5px solid #f09595;display:flex;align-items:center;justify-content:center;font-size:18px;';
         x.textContent = '🚫';
-        x.title = data.reason || 'Image rejected';
+        x.title = modData.reason || 'Image rejected';
         wrap.appendChild(x);
+        continue;
       }
-    } catch(e) {
-      /* if moderation API fails, be safe and allow (fail open) */
-      safe = true;
-    }
+    } catch(e) { safe = true; }
 
+    /* 2. upload to Cloudinary */
     if (safe) {
-      img.style.opacity = '1';
+      try {
+        const upRes = await fetch('/api/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64, folder: 'autom8-listings' })
+        });
+        const upData = await upRes.json();
+        if (upData.url) {
+          img.style.opacity = '1';
+          badge.style.background = '#EAF3DE';
+          badge.textContent = '✓';
+          /* store first image URL as the property image */
+          if (!firstUploaded) {
+            uploadedPropertyImageUrl = upData.url;
+            firstUploaded = true;
+            setLog('Property image uploaded ✓', 'ok');
+          }
+        } else {
+          badge.style.background = '#FAEEDA';
+          badge.textContent = '⚠';
+          img.style.opacity = '0.6';
+        }
+      } catch(e) {
+        img.style.opacity = '1';
+        badge.textContent = '';
+      }
     }
   }
 
   if (rejected > 0) {
     setLog(rejected + ' image(s) rejected — explicit content detected', 'err');
-  } else {
-    setLog(files.length + ' image(s) attached and verified', 'ok');
+  } else if (uploadedPropertyImageUrl) {
+    setLog(files.length + ' image(s) ready — using first as property photo', 'ok');
   }
 }
 
@@ -1105,7 +1157,8 @@ async function launchWorkflow() {
     OPEN_HOME_DATE: document.getElementById('f-open-home').value,
     CAMPAIGN_DATE:  new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'long',year:'numeric'}),
     SOURCE:         isDemo ? 'demo' : 'listing-launcher-ui',
-    AGENT_PHOTO_URL: agentPhotoBase64 || (AGENTS[document.getElementById('f-agent-select').value]?.photo) || DEMO.agentPhoto,
+    AGENT_PHOTO_URL: uploadedAgentPhotoUrl || (AGENTS[document.getElementById('f-agent-select').value]?.photo) || DEMO.agentPhoto,
+    PROPERTY_IMAGE_URL: uploadedPropertyImageUrl || DEMO.propertyImage,
   };
 
   /* always fire the webhook */
