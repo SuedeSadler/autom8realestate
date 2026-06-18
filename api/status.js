@@ -9,16 +9,21 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'KV store not configured' });
   }
 
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+
   try {
     const r = await fetch(`${kvUrl}/get/${jobId}`, {
       headers: { Authorization: `Bearer ${kvToken}` }
     });
     const data = await r.json();
 
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-    if (data.result) {
-      return res.status(200).json({ ready: true, flyerUrl: decodeURIComponent(data.result) });
+    console.log('KV get result for', jobId, ':', JSON.stringify(data));
+
+    // data.result is the plain URL string stored by complete.js
+    if (data.result && typeof data.result === 'string' && data.result.startsWith('http')) {
+      return res.status(200).json({ ready: true, flyerUrl: data.result });
     }
+
     return res.status(200).json({ ready: false });
   } catch(err) {
     return res.status(502).json({ error: 'Upstash read failed', detail: err.message });
