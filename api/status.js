@@ -15,6 +15,7 @@ export default async function handler(req, res) {
     });
     const data = await r.json();
 
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     if (data.result) {
       return res.status(200).json({ ready: true, flyerUrl: decodeURIComponent(data.result) });
     }
