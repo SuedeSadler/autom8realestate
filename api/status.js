@@ -20,8 +20,12 @@ export default async function handler(req, res) {
     console.log('KV get result for', jobId, ':', JSON.stringify(data));
 
     // data.result is the plain URL string stored by complete.js
-    if (data.result && typeof data.result === 'string' && data.result.startsWith('http')) {
-      return res.status(200).json({ ready: true, flyerUrl: data.result });
+    if (data.result && typeof data.result === 'string') {
+      // strip leading = if n8n sent the expression prefix
+      const flyerUrl = data.result.startsWith('=') ? data.result.slice(1) : data.result;
+      if (flyerUrl.startsWith('http')) {
+        return res.status(200).json({ ready: true, flyerUrl });
+      }
     }
 
     return res.status(200).json({ ready: false });
