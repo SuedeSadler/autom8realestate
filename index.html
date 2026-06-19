@@ -1438,11 +1438,11 @@ async function launchWorkflow() {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function pollForFlyer(jobId) {
-  const maxAttempts = 150; // 150 x 4s = 10 min timeout
+  const maxAttempts = 60; // 60 x 2s = 2 min timeout
   let attempts = 0;
 
   while (attempts < maxAttempts) {
-    await sleep(4000);
+    await sleep(2000);
     attempts++;
 
     try {
@@ -1476,7 +1476,7 @@ async function pollForFlyer(jobId) {
         return;
       }
 
-      setLog('Generating flyer… (' + (attempts * 4) + 's)', 'run');
+      setLog('Generating flyer… (' + (attempts * 2) + 's)', 'run');
     } catch(e) {
       /* keep polling on transient errors */
     }
