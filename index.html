@@ -1257,6 +1257,9 @@ async function launchWorkflow() {
     return;
   }
 
+  /* reset any previous polling jobId */
+  currentFlyerUrl = null;
+
   /* ── USAGE LIMIT CHECK (real submissions only) ── */
   if (!isDemo && !isUnlocked() && usageRemaining() <= 0) {
     setLog('Render limit reached (2/2) — contact us to generate more', 'err');
@@ -1405,39 +1408,25 @@ async function launchWorkflow() {
   document.getElementById('result-address').textContent = address + ' is now live and being marketed.';
 
   const flyerEl = document.getElementById('result-flyer');
-  if (isDemo) {
-    currentFlyerUrl = 'https://res.cloudinary.com/dqdqcdtj7/image/upload/q_auto/f_auto/v1781652206/44014C19-D585-4EDB-AD7D-B9816E3C3B9C_r69eyd.jpg';
-    flyerEl.innerHTML = `
-      <div style="position:relative;">
-        <img src="${currentFlyerUrl}"
-          style="width:100%;border-radius:8px;display:block;" alt="Demo listing flyer">
-        <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.5);color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;">
-          <i class="ti ti-zoom-in" style="font-size:11px;"></i> Click to enlarge
-        </div>
-      </div>
-      <p style="text-align:center;font-size:11px;color:#9c9a92;margin-top:8px;">
-        Pre-generated demo flyer &middot; Real submissions generate a live version
-      </p>`;
-    document.getElementById('email-flyer-section').style.display = 'block';
-  } else {
-    /* show a spinner while we poll for the generated flyer */
-    const remaining = usageRemaining();
-    flyerEl.innerHTML = `
-      <div id="flyer-loading" style="text-align:center;padding:20px 0;">
-        <div style="display:inline-flex;align-items:center;gap:8px;font-size:12px;color:#5f5e5a;">
-          <i class="ti ti-loader-2 spinner" style="font-size:16px;color:#FF6D3F;"></i>
-          Generating your listing flyer…
-        </div>
-        <div style="font-size:11px;color:#9c9a92;margin-top:6px;">This usually takes 10–20 seconds</div>
-      </div>
-      <div id="flyer-result" style="display:none;"></div>
-      <p style="text-align:center;font-size:11px;color:#854F0B;font-weight:500;margin-top:8px;">
-        ${remaining} demo render${remaining===1?'':'s'} remaining
-      </p>`;
 
-    /* start polling if we have a jobId */
-    if (jobId) pollForFlyer(jobId);
-  }
+  /* same spinner and polling for both demo and real */
+  const remaining = usageRemaining();
+  flyerEl.innerHTML = `
+    <div id="flyer-loading" style="text-align:center;padding:20px 0;">
+      <div style="display:inline-flex;align-items:center;gap:8px;font-size:12px;color:#5f5e5a;">
+        <i class="ti ti-loader-2 spinner" style="font-size:16px;color:#FF6D3F;"></i>
+        ${isDemo ? 'Loading flyer…' : 'Generating your listing flyer…'}
+      </div>
+      <div style="font-size:11px;color:#9c9a92;margin-top:6px;">
+        ${isDemo ? 'Fetching pre-generated flyer' : 'This usually takes 10–20 seconds'}
+      </div>
+    </div>
+    <div id="flyer-result" style="display:none;"></div>
+    ${!isDemo ? `<p style="text-align:center;font-size:11px;color:#854F0B;font-weight:500;margin-top:8px;">${remaining} demo render${remaining===1?'':'s'} remaining</p>` : ''}
+  `;
+
+  /* poll for flyer URL from KV for both demo and real */
+  if (jobId) pollForFlyer(jobId);
 
   document.getElementById('resultOverlay').classList.add('visible');
 
@@ -1449,11 +1438,11 @@ async function launchWorkflow() {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function pollForFlyer(jobId) {
-  const maxAttempts = 30; // 30 x 2s = 60s timeout
+  const maxAttempts = 150; // 150 x 4s = 10 min timeout
   let attempts = 0;
 
   while (attempts < maxAttempts) {
-    await sleep(2000);
+    await sleep(4000);
     attempts++;
 
     try {
@@ -1487,7 +1476,7 @@ async function pollForFlyer(jobId) {
         return;
       }
 
-      setLog('Generating flyer… (' + attempts + 's)', 'run');
+      setLog('Generating flyer… (' + (attempts * 4) + 's)', 'run');
     } catch(e) {
       /* keep polling on transient errors */
     }
@@ -1495,8 +1484,8 @@ async function pollForFlyer(jobId) {
 
   /* timeout */
   const loadingEl = document.getElementById('flyer-loading');
-  if (loadingEl) loadingEl.innerHTML = '<p style="font-size:11px;color:#9c9a92;text-align:center;">Flyer is being processed — check your email shortly.</p>';
-  setLog('Flyer still generating — check n8n', 'run');
+  if (loadingEl) loadingEl.innerHTML = '<p style="font-size:11px;color:#9c9a92;text-align:center;">Flyer is taking longer than expected — check your n8n workflow.</p>';
+  setLog('Polling timed out after 10 mins', 'err');
 }
 
 /* ── PIN OVERRIDE ── */
