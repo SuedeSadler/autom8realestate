@@ -16,21 +16,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Upstash REST SET command: POST /pipeline with array of commands
-    const r = await fetch(`${kvUrl}/pipeline`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${kvToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify([
-        ['SET', jobId, flyerUrl],
-        ['EXPIRE', jobId, 3600],
-      ]),
+    // Use simple GET-style SET command: /set/key/value/ex/seconds
+    const encodedUrl = encodeURIComponent(flyerUrl);
+    const r = await fetch(`${kvUrl}/set/${jobId}/${encodedUrl}/ex/3600`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${kvToken}` }
     });
     const data = await r.json();
     console.log('KV set result:', JSON.stringify(data));
-    return res.status(200).json({ ok: true, data });
+
+    // Verify it was stored
+    const check = await fetch(`${kvUrl}/get/${jobId}`, {
+      headers: { Authorization: `Bearer ${kvToken}` }
+    });
+    const checkData = await check.json();
+    console.log('KV verify read:', JSON.stringify(checkData));
+
+    return res.status(200).json({ ok: true, data, verified: checkData.result !== null });
   } catch(err) {
     return res.status(502).json({ error: 'Upstash write failed', detail: err.message });
   }
